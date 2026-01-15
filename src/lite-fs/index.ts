@@ -1,8 +1,7 @@
-import type { FileSystemAPI } from "../api.ts";
 import { createFSCore, type FSCore } from "./core.ts";
 import { createFileOps, type FileOps } from "./file-ops.ts";
 
-export class LiteFS implements FileSystemAPI {
+export class LiteFS {
     readonly #core: FSCore;
     readonly #file_ops: FileOps;
 
