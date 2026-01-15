@@ -9,8 +9,8 @@
         // Environment Settings
         "module": "NodeNext",
         "target": "ESNext",
-        "lib": ["ESNext"],
-        "types": ["mocha"],
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "types": ["node", "mocha"],
 
         // Other Outputs
         "sourceMap": true,

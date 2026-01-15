@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "A simple fs-like API wrapper of IndexedDB for light application usage.",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -36,9 +39,13 @@
     "@types/node": "^24.10.1",
     "chai": "^6.2.1",
     "eslint": "^9.39.1",
+    "fake-indexeddb": "^6.2.5",
     "mocha": "^11.7.5",
     "rimraf": "^6.1.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.1"
+  },
+  "dependencies": {
+    "idb": "^8.0.3"
   }
 }
