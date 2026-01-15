@@ -2,6 +2,9 @@
 
 A simple fs-like API wrapper of IndexedDB for light application usage.
 
+> [!WARNING]
+> This library is currently work-in-progress, and it's for personal use.
+
 ## Installation
 
 ```bash
