@@ -47,5 +47,5 @@ export interface FileSystemAPI {
     rm(path: string, options?: RmOptions): Promise<void>;
     
     // === Move/Rename ===
-    rename(oldPath: string, newPath: string): Promise<void>;
+    rename(old_path: string, new_path: string): Promise<void>;
 }
