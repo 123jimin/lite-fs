@@ -1,5 +1,6 @@
 import type { FSCore, DBFileEntry } from "./core.ts";
 import { now, STORE_NAME } from "./core.ts";
+import { ensureParentDirs } from "./util.ts";
 import { validatePath, getParentPath } from "../path.ts";
 import { FSError } from "../error.ts";
 
@@ -35,6 +36,8 @@ export function createFileOps(core: FSCore): FileOps {
         validatePath(path, 'file');
 
         const db = await core.getDB();
+        await ensureParentDirs(db, path);
+
         const bytes = typeof content === 'string'
             ? new TextEncoder().encode(content)
             : content;

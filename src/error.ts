@@ -67,6 +67,6 @@ export class FSError extends Error {
  */
 export function isFSError(error: unknown, code?: FSErrorCode): error is FSError {
     if (!(error instanceof FSError)) return false;
-    if (code !== undefined && error.code !== code) return false;
+    if (code != null && error.code !== code) return false;
     return true;
 }

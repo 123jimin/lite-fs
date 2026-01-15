@@ -21,3 +21,12 @@ await fs.writeFile("/hello.txt", "Hello, world!");
 const text = await fs.readFile("/hello.txt", 'utf-8');
 console.log(text); // "Hello, world!"
 ```
+
+### Path Rules
+
+- All paths **must be absolute** (start with `/`).
+- Folder paths end with `/`, file paths do not.
+- Empty segments (`//`) are not allowed.
+- `.` and `..` segments are not allowed in paths.
+
+For handling relative paths, use `joinPath` exported by this library.
