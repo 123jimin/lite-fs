@@ -1,7 +1,7 @@
 {
-  "name": "placeholder-name",
+  "name": "@jiminp/lite-fs",
   "version": "0.0.1",
-  "description": "placeholder-description",
+  "description": "A simple fs-like API wrapper of IndexedDB for light application usage.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,16 +19,16 @@
     "test": "npx mocha \"dist/**/*.spec.js\""
   },
   "keywords": [],
-  "author": "placeholder-author",
-  "license": "UNLICENSED",
+  "author": "Jimin Park",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.invalid/placeholder/placeholder.git"
+    "url": "git+https://github.com/123jimin/lite-fs.git"
   },
   "bugs": {
-    "url": "https://github.invalid/placeholder/placeholder/issues"
+    "url": "https://github.com/123jimin/lite-fs/issues"
   },
-  "homepage": "https://github.invalid/placeholder/placeholder",
+  "homepage": "https://github.com/123jimin/lite-fs",
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/chai": "^5.2.3",

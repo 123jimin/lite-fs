@@ -10,7 +10,7 @@
         "module": "NodeNext",
         "target": "ESNext",
         "lib": ["ESNext"],
-        "types": ["node", "mocha"],
+        "types": ["mocha"],
 
         // Other Outputs
         "sourceMap": true,
