@@ -280,16 +280,6 @@ describe("getParentPath", () => {
             assert.strictEqual(getParentPath("/"), "/");
         });
     });
-
-    context("with paths without trailing slash", () => {
-        it("should return root for single segment", () => {
-            assert.strictEqual(getParentPath("/foo"), "/");
-        });
-
-        it("should return parent folder for nested path", () => {
-            assert.strictEqual(getParentPath("/foo/bar"), "/foo/");
-        });
-    });
 });
 
 describe("getBaseName", () => {

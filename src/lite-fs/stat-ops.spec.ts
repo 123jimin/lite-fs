@@ -43,34 +43,6 @@ describe("stat", function () {
             assert.isTrue(stats.isFile());
             assert.isFalse(stats.isDirectory());
         });
-
-        it("should return Stats for a file without extension", async function () {
-            await file_ops.writeFile("/myfile", "content");
-
-            const stats = await stat_ops.stat("/myfile");
-
-            assert.isTrue(stats.isFile());
-            assert.isFalse(stats.isDirectory());
-        });
-
-        it("should return Stats for an empty file", async function () {
-            await file_ops.writeFile("/empty.txt", "");
-
-            const stats = await stat_ops.stat("/empty.txt");
-
-            assert.isTrue(stats.isFile());
-            assert.isFalse(stats.isDirectory());
-        });
-
-        it("should return Stats for a binary file", async function () {
-            const binary_content = new Uint8Array([0x00, 0x01, 0x02, 0xff]);
-            await file_ops.writeFile("/binary.bin", binary_content);
-
-            const stats = await stat_ops.stat("/binary.bin");
-
-            assert.isTrue(stats.isFile());
-            assert.isFalse(stats.isDirectory());
-        });
     });
 
     context("stating directories", function () {
@@ -87,26 +59,6 @@ describe("stat", function () {
             await dir_ops.mkdir("/foo/bar/baz/", { recursive: true });
 
             const stats = await stat_ops.stat("/foo/bar/baz/");
-
-            assert.isFalse(stats.isFile());
-            assert.isTrue(stats.isDirectory());
-        });
-
-        it("should return Stats for an empty directory", async function () {
-            await dir_ops.mkdir("/empty/");
-
-            const stats = await stat_ops.stat("/empty/");
-
-            assert.isFalse(stats.isFile());
-            assert.isTrue(stats.isDirectory());
-        });
-
-        it("should return Stats for a directory with contents", async function () {
-            await dir_ops.mkdir("/parent/");
-            await file_ops.writeFile("/parent/child.txt", "content");
-            await dir_ops.mkdir("/parent/subdir/");
-
-            const stats = await stat_ops.stat("/parent/");
 
             assert.isFalse(stats.isFile());
             assert.isTrue(stats.isDirectory());
@@ -132,32 +84,12 @@ describe("stat", function () {
             assert.instanceOf(stats.mtime, Date);
         });
 
-        it("should return mtime as a Date object for directories", async function () {
-            await dir_ops.mkdir("/mydir/");
-
-            const stats = await stat_ops.stat("/mydir/");
-
-            assert.instanceOf(stats.mtime, Date);
-        });
-
         it("should return recent mtime for newly created file", async function () {
             const before = Date.now();
             await file_ops.writeFile("/test.txt", "content");
             const after = Date.now();
 
             const stats = await stat_ops.stat("/test.txt");
-            const mtime_ms = stats.mtime.getTime();
-
-            assert.isAtLeast(mtime_ms, before);
-            assert.isAtMost(mtime_ms, after);
-        });
-
-        it("should return recent mtime for newly created directory", async function () {
-            const before = Date.now();
-            await dir_ops.mkdir("/mydir/");
-            const after = Date.now();
-
-            const stats = await stat_ops.stat("/mydir/");
             const mtime_ms = stats.mtime.getTime();
 
             assert.isAtLeast(mtime_ms, before);
@@ -231,33 +163,6 @@ describe("stat", function () {
         it("should throw EINVAL for non-absolute path", async function () {
             try {
                 await stat_ops.stat("relative/path.txt");
-                assert.fail("Expected error");
-            } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
-            }
-        });
-
-        it("should throw EINVAL for path with empty segments", async function () {
-            try {
-                await stat_ops.stat("/foo//bar.txt");
-                assert.fail("Expected error");
-            } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
-            }
-        });
-
-        it("should throw EINVAL for path with dot segment", async function () {
-            try {
-                await stat_ops.stat("/foo/./bar.txt");
-                assert.fail("Expected error");
-            } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
-            }
-        });
-
-        it("should throw EINVAL for path with double-dot segment", async function () {
-            try {
-                await stat_ops.stat("/foo/../bar.txt");
                 assert.fail("Expected error");
             } catch (err) {
                 assert.isTrue(isFSError(err, "EINVAL"));

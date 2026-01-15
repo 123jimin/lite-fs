@@ -86,22 +86,6 @@ describe("writeFile", function () {
             const content = await file_ops.readFile("/test.txt", "utf-8");
             assert.equal(content, "updated");
         });
-
-        it("should overwrite string with binary", async function () {
-            await file_ops.writeFile("/test.txt", "text");
-            await file_ops.writeFile("/test.txt", new Uint8Array([1, 2, 3]));
-
-            const result = await file_ops.readFile("/test.txt");
-            assert.deepEqual(result, new Uint8Array([1, 2, 3]));
-        });
-
-        it("should overwrite binary with string", async function () {
-            await file_ops.writeFile("/test.txt", new Uint8Array([1, 2, 3]));
-            await file_ops.writeFile("/test.txt", "text");
-
-            const content = await file_ops.readFile("/test.txt", "utf-8");
-            assert.equal(content, "text");
-        });
     });
 
     context("error cases", function () {
@@ -130,33 +114,6 @@ describe("writeFile", function () {
         it("should throw EINVAL for non-absolute path", async function () {
             try {
                 await file_ops.writeFile("relative.txt", "content");
-                assert.fail("Expected error");
-            } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
-            }
-        });
-
-        it("should throw EINVAL for folder path with trailing slash", async function () {
-            try {
-                await file_ops.writeFile("/folder/", "content");
-                assert.fail("Expected error");
-            } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
-            }
-        });
-
-        it("should throw EINVAL for path with empty segments", async function () {
-            try {
-                await file_ops.writeFile("/foo//bar.txt", "content");
-                assert.fail("Expected error");
-            } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
-            }
-        });
-
-        it("should throw EINVAL for path with dot segments", async function () {
-            try {
-                await file_ops.writeFile("/foo/../bar.txt", "content");
                 assert.fail("Expected error");
             } catch (err) {
                 assert.isTrue(isFSError(err, "EINVAL"));

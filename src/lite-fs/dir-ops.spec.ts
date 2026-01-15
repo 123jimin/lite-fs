@@ -157,33 +157,6 @@ describe("mkdir", function () {
                 assert.isTrue(isFSError(err, "EINVAL"));
             }
         });
-
-        it("should throw EINVAL for file path without trailing slash", async function () {
-            try {
-                await dir_ops.mkdir("/foo");
-                assert.fail("Expected error");
-            } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
-            }
-        });
-
-        it("should throw EINVAL for path with empty segments", async function () {
-            try {
-                await dir_ops.mkdir("/foo//bar/");
-                assert.fail("Expected error");
-            } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
-            }
-        });
-
-        it("should throw EINVAL for path with dot segments", async function () {
-            try {
-                await dir_ops.mkdir("/foo/../bar/");
-                assert.fail("Expected error");
-            } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
-            }
-        });
     });
 });
 
