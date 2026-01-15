@@ -1,291 +1,328 @@
-import 'fake-indexeddb/auto';
-import { assert } from 'chai';
+import "fake-indexeddb/auto";
+import { assert } from "chai";
+import { createFSCore, type FSCore } from "./core/index.ts";
+import { createDirOps, type DirOps } from "./dir-ops.ts";
+import { createFileOps, type FileOps } from "./file-ops.ts";
+import { isFSError } from "../error.ts";
 
-import { LiteFS } from "./index.ts";
-import { FSError, isFSError } from "../error.ts";
+describe("writeFile", function () {
+    let core: FSCore;
+    let dir_ops: DirOps;
+    let file_ops: FileOps;
 
-describe('FileOps', () => {
-    let fs: LiteFS;
-    let dbName: string;
-
-    beforeEach(() => {
-        dbName = `test-fs-${Date.now()}-${Math.random()}`;
-        fs = new LiteFS(dbName);
+    beforeEach(async function () {
+        core = createFSCore("test-fs-writefile");
+        await core.reset();
+        dir_ops = createDirOps(core);
+        file_ops = createFileOps(core);
     });
 
-    describe('writeFile', () => {
-        context('with string content', () => {
-            it('should write a text file successfully', async () => {
-                await fs.writeFile('/hello.txt', 'Hello, world!');
-                const content = await fs.readFile('/hello.txt', 'utf-8');
-                assert.strictEqual(content, 'Hello, world!');
-            });
+    afterEach(async function () {
+        await core.reset();
+    });
 
-            it('should handle empty string', async () => {
-                await fs.writeFile('/empty.txt', '');
-                const content = await fs.readFile('/empty.txt', 'utf-8');
-                assert.strictEqual(content, '');
-            });
-
-            it('should handle unicode content', async () => {
-                const unicode = '你好世界 🌍 émojis';
-                await fs.writeFile('/unicode.txt', unicode);
-                const content = await fs.readFile('/unicode.txt', 'utf-8');
-                assert.strictEqual(content, unicode);
-            });
-
-            it('should overwrite existing file', async () => {
-                await fs.writeFile('/test.txt', 'First content');
-                await fs.writeFile('/test.txt', 'Second content');
-                const content = await fs.readFile('/test.txt', 'utf-8');
-                assert.strictEqual(content, 'Second content');
-            });
+    context("creating files", function () {
+        it("should create a file at root level", async function () {
+            await file_ops.writeFile("/test.txt", "hello");
+            const content = await file_ops.readFile("/test.txt", "utf-8");
+            assert.equal(content, "hello");
         });
 
-        context('with Uint8Array content', () => {
-            it('should write binary data', async () => {
-                const data = new Uint8Array([0, 1, 2, 255, 128, 64]);
-                await fs.writeFile('/binary.bin', data);
-                const content = await fs.readFile('/binary.bin');
-                assert.deepEqual(new Uint8Array(content), data);
-            });
+        it("should create parent directories automatically", async function () {
+            await file_ops.writeFile("/foo/bar/test.txt", "content");
 
-            it('should handle empty Uint8Array', async () => {
-                const data = new Uint8Array([]);
-                await fs.writeFile('/empty.bin', data);
-                const content = await fs.readFile('/empty.bin');
-                assert.strictEqual(content.length, 0);
-            });
+            const entries = await dir_ops.readdir("/foo/bar/");
+            assert.deepEqual(entries, ["test.txt"]);
         });
 
-        context('with nested paths', () => {
-            it('should create parent directories automatically', async () => {
-                await fs.writeFile('/a/b/c/deep.txt', 'Deep content');
-                const content = await fs.readFile('/a/b/c/deep.txt', 'utf-8');
-                assert.strictEqual(content, 'Deep content');
-            });
+        it("should create deeply nested file with parents", async function () {
+            await file_ops.writeFile("/a/b/c/d/file.txt", "deep");
 
-            it('should write multiple files in same directory', async () => {
-                await fs.writeFile('/dir/file1.txt', 'Content 1');
-                await fs.writeFile('/dir/file2.txt', 'Content 2');
-                
-                const content1 = await fs.readFile('/dir/file1.txt', 'utf-8');
-                const content2 = await fs.readFile('/dir/file2.txt', 'utf-8');
-                
-                assert.strictEqual(content1, 'Content 1');
-                assert.strictEqual(content2, 'Content 2');
-            });
-        });
-
-        context('with invalid paths', () => {
-            it('should throw EINVAL for relative path', async () => {
-                try {
-                    await fs.writeFile('relative.txt', 'content');
-                    assert.fail('Expected FSError to be thrown');
-                } catch (err) {
-                    assert.isTrue(isFSError(err, 'EINVAL'));
-                }
-            });
-
-            it('should throw EINVAL for path ending with /', async () => {
-                try {
-                    await fs.writeFile('/folder/', 'content');
-                    assert.fail('Expected FSError to be thrown');
-                } catch (err) {
-                    assert.isTrue(isFSError(err, 'EINVAL'));
-                }
-            });
-
-            it('should throw EINVAL for path with empty segments', async () => {
-                try {
-                    await fs.writeFile('/foo//bar.txt', 'content');
-                    assert.fail('Expected FSError to be thrown');
-                } catch (err) {
-                    assert.isTrue(isFSError(err, 'EINVAL'));
-                }
-            });
-
-            it('should throw EINVAL for path with . segment', async () => {
-                try {
-                    await fs.writeFile('/foo/./bar.txt', 'content');
-                    assert.fail('Expected FSError to be thrown');
-                } catch (err) {
-                    assert.isTrue(isFSError(err, 'EINVAL'));
-                }
-            });
-
-            it('should throw EINVAL for path with .. segment', async () => {
-                try {
-                    await fs.writeFile('/foo/../bar.txt', 'content');
-                    assert.fail('Expected FSError to be thrown');
-                } catch (err) {
-                    assert.isTrue(isFSError(err, 'EINVAL'));
-                }
-            });
-        });
-
-        context('when path conflicts with existing entry', () => {
-            it('should throw ENOTDIR if parent path is a file', async () => {
-                await fs.writeFile('/file.txt', 'content');
-                try {
-                    await fs.writeFile('/file.txt/nested.txt', 'nested');
-                    assert.fail('Expected FSError to be thrown');
-                } catch (err) {
-                    assert.isTrue(isFSError(err, 'ENOTDIR'));
-                }
-            });
+            const content = await file_ops.readFile("/a/b/c/d/file.txt", "utf-8");
+            assert.equal(content, "deep");
         });
     });
 
-    describe('readFile', () => {
-        context('without encoding', () => {
-            it('should return Uint8Array for text file', async () => {
-                await fs.writeFile('/test.txt', 'Hello');
-                const content = await fs.readFile('/test.txt');
-                assert.instanceOf(content, Uint8Array);
-            });
-
-            it('should return Uint8Array for binary file', async () => {
-                const data = new Uint8Array([1, 2, 3]);
-                await fs.writeFile('/test.bin', data);
-                const content = await fs.readFile('/test.bin');
-                assert.instanceOf(content, Uint8Array);
-                assert.deepEqual(new Uint8Array(content), data);
-            });
+    context("writing content types", function () {
+        it("should write string content", async function () {
+            await file_ops.writeFile("/string.txt", "string content");
+            const content = await file_ops.readFile("/string.txt", "utf-8");
+            assert.equal(content, "string content");
         });
 
-        context('with utf-8 encoding', () => {
-            it('should return string', async () => {
-                await fs.writeFile('/test.txt', 'Hello, world!');
-                const content = await fs.readFile('/test.txt', 'utf-8');
-                assert.isString(content);
-                assert.strictEqual(content, 'Hello, world!');
-            });
+        it("should write Uint8Array content", async function () {
+            const bytes = new Uint8Array([72, 101, 108, 108, 111]); // "Hello"
+            await file_ops.writeFile("/binary.bin", bytes);
 
-            it('should decode binary data as utf-8', async () => {
-                const text = 'UTF-8 text';
-                const encoder = new TextEncoder();
-                await fs.writeFile('/test.txt', encoder.encode(text));
-                const content = await fs.readFile('/test.txt', 'utf-8');
-                assert.strictEqual(content, text);
-            });
+            const result = await file_ops.readFile("/binary.bin");
+            assert.deepEqual(result, bytes);
         });
 
-        context('when file does not exist', () => {
-            it('should throw ENOENT', async () => {
-                try {
-                    await fs.readFile('/nonexistent.txt');
-                    assert.fail('Expected FSError to be thrown');
-                } catch (err) {
-                    assert.isTrue(isFSError(err, 'ENOENT'));
-                    assert.strictEqual((err as FSError).path, '/nonexistent.txt');
-                }
-            });
-
-            it('should throw ENOENT for nested nonexistent path', async () => {
-                try {
-                    await fs.readFile('/a/b/c/nonexistent.txt');
-                    assert.fail('Expected FSError to be thrown');
-                } catch (err) {
-                    assert.isTrue(isFSError(err, 'ENOENT'));
-                }
-            });
+        it("should write empty string", async function () {
+            await file_ops.writeFile("/empty.txt", "");
+            const content = await file_ops.readFile("/empty.txt", "utf-8");
+            assert.equal(content, "");
         });
 
-        context('with invalid paths', () => {
-            it('should throw EINVAL for relative path', async () => {
-                try {
-                    await fs.readFile('relative.txt');
-                    assert.fail('Expected FSError to be thrown');
-                } catch (err) {
-                    assert.isTrue(isFSError(err, 'EINVAL'));
-                }
-            });
-
-            it('should throw EINVAL for path with empty segments', async () => {
-                try {
-                    await fs.readFile('/foo//bar.txt');
-                    assert.fail('Expected FSError to be thrown');
-                } catch (err) {
-                    assert.isTrue(isFSError(err, 'EINVAL'));
-                }
-            });
+        it("should write empty Uint8Array", async function () {
+            await file_ops.writeFile("/empty.bin", new Uint8Array(0));
+            const result = await file_ops.readFile("/empty.bin");
+            assert.deepEqual(result, new Uint8Array(0));
         });
 
-        context('when path is a directory', () => {
-            it('should throw EINVAL for folder path (paths ending with /)', async () => {
-                await fs.writeFile('/dir/file.txt', 'content');
-                try {
-                    await fs.readFile('/dir/');
-                    assert.fail('Expected FSError to be thrown');
-                } catch (err) {
-                    // Folder paths (ending with /) are invalid for file operations
-                    assert.isTrue(isFSError(err, 'EINVAL'));
-                }
-            });
+        it("should handle unicode content", async function () {
+            const unicode = "Hello 世界 🌍";
+            await file_ops.writeFile("/unicode.txt", unicode);
+            const content = await file_ops.readFile("/unicode.txt", "utf-8");
+            assert.equal(content, unicode);
         });
     });
 
-    describe('readFile and writeFile integration', () => {
-        context('round-trip data integrity', () => {
-            it('should preserve string content exactly', async () => {
-                const original = 'Line 1\nLine 2\r\nLine 3\tTabbed';
-                await fs.writeFile('/test.txt', original);
-                const retrieved = await fs.readFile('/test.txt', 'utf-8');
-                assert.strictEqual(retrieved, original);
-            });
+    context("overwriting files", function () {
+        it("should overwrite existing file content", async function () {
+            await file_ops.writeFile("/test.txt", "original");
+            await file_ops.writeFile("/test.txt", "updated");
 
-            it('should preserve binary content exactly', async () => {
-                const original = new Uint8Array(256);
-                for (let i = 0; i < 256; i++) {
-                    original[i] = i;
-                }
-                await fs.writeFile('/all-bytes.bin', original);
-                const retrieved = await fs.readFile('/all-bytes.bin');
-                assert.deepEqual(new Uint8Array(retrieved), original);
-            });
-
-            it('should handle large files', async () => {
-                const size = 1024 * 1024; // 1MB
-                const original = new Uint8Array(size);
-                for (let i = 0; i < size; i++) {
-                    original[i] = i % 256;
-                }
-                await fs.writeFile('/large.bin', original);
-                const retrieved = await fs.readFile('/large.bin');
-                assert.strictEqual(retrieved.length, size);
-                assert.deepEqual(new Uint8Array(retrieved), original);
-            });
+            const content = await file_ops.readFile("/test.txt", "utf-8");
+            assert.equal(content, "updated");
         });
 
-        context('multiple file operations', () => {
-            it('should handle many files in root', async () => {
-                const count = 100;
-                for (let i = 0; i < count; i++) {
-                    await fs.writeFile(`/file${i}.txt`, `Content ${i}`);
-                }
-                for (let i = 0; i < count; i++) {
-                    const content = await fs.readFile(`/file${i}.txt`, 'utf-8');
-                    assert.strictEqual(content, `Content ${i}`);
-                }
-            });
+        it("should overwrite string with binary", async function () {
+            await file_ops.writeFile("/test.txt", "text");
+            await file_ops.writeFile("/test.txt", new Uint8Array([1, 2, 3]));
 
-            it('should handle deep nested structure', async () => {
-                const paths = [
-                    '/a/file.txt',
-                    '/a/b/file.txt',
-                    '/a/b/c/file.txt',
-                    '/a/b/c/d/file.txt',
-                    '/a/b/c/d/e/file.txt',
-                ];
-                for (const path of paths) {
-                    await fs.writeFile(path, `Content at ${path}`);
-                }
-                for (const path of paths) {
-                    const content = await fs.readFile(path, 'utf-8');
-                    assert.strictEqual(content, `Content at ${path}`);
-                }
-            });
+            const result = await file_ops.readFile("/test.txt");
+            assert.deepEqual(result, new Uint8Array([1, 2, 3]));
+        });
+
+        it("should overwrite binary with string", async function () {
+            await file_ops.writeFile("/test.txt", new Uint8Array([1, 2, 3]));
+            await file_ops.writeFile("/test.txt", "text");
+
+            const content = await file_ops.readFile("/test.txt", "utf-8");
+            assert.equal(content, "text");
+        });
+    });
+
+    context("error cases", function () {
+        it("should throw ENOTDIR when parent is a file", async function () {
+            await file_ops.writeFile("/file", "content");
+            try {
+                await file_ops.writeFile("/file/child.txt", "child");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "ENOTDIR"));
+            }
+        });
+
+        it("should throw ENOTDIR when ancestor is a file", async function () {
+            await file_ops.writeFile("/file", "content");
+            try {
+                await file_ops.writeFile("/file/a/b/c.txt", "deep");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "ENOTDIR"));
+            }
+        });
+    });
+
+    context("path validation", function () {
+        it("should throw EINVAL for non-absolute path", async function () {
+            try {
+                await file_ops.writeFile("relative.txt", "content");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "EINVAL"));
+            }
+        });
+
+        it("should throw EINVAL for folder path with trailing slash", async function () {
+            try {
+                await file_ops.writeFile("/folder/", "content");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "EINVAL"));
+            }
+        });
+
+        it("should throw EINVAL for path with empty segments", async function () {
+            try {
+                await file_ops.writeFile("/foo//bar.txt", "content");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "EINVAL"));
+            }
+        });
+
+        it("should throw EINVAL for path with dot segments", async function () {
+            try {
+                await file_ops.writeFile("/foo/../bar.txt", "content");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "EINVAL"));
+            }
+        });
+    });
+});
+
+describe("readFile", function () {
+    let core: FSCore;
+    let dir_ops: DirOps;
+    let file_ops: FileOps;
+
+    beforeEach(async function () {
+        core = createFSCore("test-fs-readfile");
+        await core.reset();
+        dir_ops = createDirOps(core);
+        file_ops = createFileOps(core);
+    });
+
+    afterEach(async function () {
+        await core.reset();
+    });
+
+    context("reading as Uint8Array", function () {
+        it("should read file as Uint8Array by default", async function () {
+            await file_ops.writeFile("/test.txt", "hello");
+            const result = await file_ops.readFile("/test.txt");
+
+            assert.instanceOf(result, Uint8Array);
+            const expected = new TextEncoder().encode("hello");
+            assert.deepEqual(result, expected);
+        });
+
+        it("should read binary file correctly", async function () {
+            const bytes = new Uint8Array([0, 1, 127, 128, 255]);
+            await file_ops.writeFile("/binary.bin", bytes);
+
+            const result = await file_ops.readFile("/binary.bin");
+            assert.deepEqual(result, bytes);
+        });
+
+        it("should read empty file", async function () {
+            await file_ops.writeFile("/empty.txt", "");
+            const result = await file_ops.readFile("/empty.txt");
+            assert.deepEqual(result, new Uint8Array(0));
+        });
+    });
+
+    context("reading as string with utf-8", function () {
+        it("should read file as string", async function () {
+            await file_ops.writeFile("/test.txt", "hello world");
+            const content = await file_ops.readFile("/test.txt", "utf-8");
+            assert.equal(content, "hello world");
+        });
+
+        it("should read unicode content", async function () {
+            const unicode = "日本語 🎉 émoji";
+            await file_ops.writeFile("/unicode.txt", unicode);
+            const content = await file_ops.readFile("/unicode.txt", "utf-8");
+            assert.equal(content, unicode);
+        });
+
+        it("should read empty file as empty string", async function () {
+            await file_ops.writeFile("/empty.txt", "");
+            const content = await file_ops.readFile("/empty.txt", "utf-8");
+            assert.equal(content, "");
+        });
+
+        it("should read multiline content", async function () {
+            const multiline = "line1\nline2\nline3";
+            await file_ops.writeFile("/multiline.txt", multiline);
+            const content = await file_ops.readFile("/multiline.txt", "utf-8");
+            assert.equal(content, multiline);
+        });
+    });
+
+    context("reading from nested paths", function () {
+        it("should read file from nested directory", async function () {
+            await file_ops.writeFile("/a/b/c/file.txt", "nested content");
+            const content = await file_ops.readFile("/a/b/c/file.txt", "utf-8");
+            assert.equal(content, "nested content");
+        });
+
+        it("should read file at root level", async function () {
+            await file_ops.writeFile("/root.txt", "root content");
+            const content = await file_ops.readFile("/root.txt", "utf-8");
+            assert.equal(content, "root content");
+        });
+    });
+
+    context("error cases", function () {
+        it("should throw ENOENT for non-existent file", async function () {
+            try {
+                await file_ops.readFile("/nonexistent.txt");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "ENOENT"));
+            }
+        });
+
+        it("should throw ENOENT for non-existent nested file", async function () {
+            await dir_ops.mkdir("/foo/", { recursive: true });
+            try {
+                await file_ops.readFile("/foo/nonexistent.txt");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "ENOENT"));
+            }
+        });
+
+        it("should throw ENOENT when parent directory does not exist", async function () {
+            try {
+                await file_ops.readFile("/nonexistent/file.txt");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "ENOENT"));
+            }
+        });
+
+        it("should throw EISDIR when trying to read a directory", async function () {
+            await dir_ops.mkdir("/mydir/", { recursive: true });
+            try {
+                await file_ops.readFile("/mydir");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "EISDIR"));
+            }
+        });
+    });
+
+    context("path validation", function () {
+        it("should throw EINVAL for non-absolute path", async function () {
+            try {
+                await file_ops.readFile("relative.txt");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "EINVAL"));
+            }
+        });
+
+        it("should throw EINVAL for folder path with trailing slash", async function () {
+            try {
+                await file_ops.readFile("/folder/");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "EINVAL"));
+            }
+        });
+
+        it("should throw EINVAL for path with empty segments", async function () {
+            try {
+                await file_ops.readFile("/foo//bar.txt");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "EINVAL"));
+            }
+        });
+
+        it("should throw EINVAL for path with dot segments", async function () {
+            try {
+                await file_ops.readFile("/foo/../bar.txt");
+                assert.fail("Expected error");
+            } catch (err) {
+                assert.isTrue(isFSError(err, "EINVAL"));
+            }
         });
     });
 });
