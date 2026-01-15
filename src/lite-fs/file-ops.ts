@@ -1,8 +1,7 @@
-import type { FSCore, DBFileEntry } from "./core.ts";
-import { now, STORE_NAME } from "./core.ts";
-import { ensureParentDirs } from "./util.ts";
-import { validatePath, getParentPath } from "../path.ts";
+import { validatePath } from "../path.ts";
 import { FSError } from "../error.ts";
+
+import { createDBFileEntry, ensureParentDirs, getEntryByPath, putEntryByPath, type FSCore } from "./core/index.ts";
 
 export interface FileOps {
     readFile(path: string): Promise<Uint8Array>;
@@ -13,11 +12,11 @@ export interface FileOps {
 export function createFileOps(core: FSCore): FileOps {
     async function readFile(path: string): Promise<Uint8Array>;
     async function readFile(path: string, encoding: 'utf-8'): Promise<string>;
-    async function readFile(path: string, encoding?: 'utf-8'): Promise<Uint8Array | string> {
-        validatePath(path, 'file');
+    async function readFile(in_path: string, encoding?: 'utf-8'): Promise<Uint8Array | string> {
+        const path = validatePath(in_path, 'file');
 
         const db = await core.getDB();
-        const entry = await db.get(STORE_NAME, path);
+        const entry = await getEntryByPath(db, path);
 
         if (!entry) {
             throw FSError.ENOENT(path, 'read');
@@ -26,14 +25,14 @@ export function createFileOps(core: FSCore): FileOps {
             throw FSError.EISDIR(path, 'read');
         }
 
-        const content = (entry as DBFileEntry).content;
+        const content = entry.content;
         return encoding === 'utf-8'
             ? new TextDecoder().decode(content)
             : content;
     }
 
-    async function writeFile(path: string, content: string | Uint8Array): Promise<void> {
-        validatePath(path, 'file');
+    async function writeFile(in_path: string, content: string | Uint8Array): Promise<void> {
+        const path = validatePath(in_path, 'file');
 
         const db = await core.getDB();
         await ensureParentDirs(db, path);
@@ -42,14 +41,8 @@ export function createFileOps(core: FSCore): FileOps {
             ? new TextEncoder().encode(content)
             : content;
 
-        const entry: DBFileEntry = {
-            type: 'file',
-            content: bytes,
-            parent: getParentPath(path),
-            mtime: now(),
-        };
-
-        await db.put(STORE_NAME, entry, path);
+        const entry = createDBFileEntry(path, bytes);
+        await putEntryByPath(db, path, entry);
     }
 
     return { readFile, writeFile };

@@ -54,16 +54,17 @@ export function isFolderPath(path: string): path is FolderPath {
  * validatePath("/foo//bar");              // throws EINVAL (empty segment)
  * validatePath("/foo/../bar");            // throws EINVAL (.. segment)
  */
-export function validatePath(path: string, type?: "folder" | "file"): void {
+export function validatePath(path: string): AbsolutePath;
+export function validatePath(path: string, type: "folder"): AbsoluteFolderPath;
+export function validatePath(path: string, type: "file"): AbsoluteFilePath;
+export function validatePath(path: string, type?: "folder" | "file"): AbsolutePath {
     if (!path.startsWith("/")) {
         throw FSError.EINVAL(path, "validatePath");
     }
 
-    if (type === "folder" && !path.endsWith("/")) {
-        throw FSError.EINVAL(path, "validatePath");
-    }
+    const is_folder_path = path.endsWith('/');
 
-    if (type === "file" && path.endsWith("/")) {
+    if ((type === "folder") !== is_folder_path) {
         throw FSError.EINVAL(path, "validatePath");
     }
 
@@ -84,6 +85,8 @@ export function validatePath(path: string, type?: "folder" | "file"): void {
             throw FSError.EINVAL(path, "validatePath");
         }
     }
+
+    return path as AbsolutePath;
 }
 
 /**

@@ -3,11 +3,11 @@ import 'fake-indexeddb/auto';
 import { assert } from 'chai';
 import { deleteDB, openDB, type IDBPDatabase } from 'idb';
 
-import { isFSError } from '../error.ts';
+import { isFSError } from "../../error.ts";
 
-import { ensureParentDirs } from './util.ts';
-import type { DBFileEntry, DBFolderEntry, DBEntry, } from './core.ts';
-import { STORE_NAME, INDEX_BY_PARENT, now } from './core.ts';
+import { STORE_NAME, INDEX_BY_PARENT } from "./const.ts";
+import type { DBFileEntry, DBFolderEntry, DBEntry, } from "./db-entry.ts";
+import { now, ensureParentDirs } from "./db-entry.ts";
 
 describe('ensureParentDirs', () => {
     const DB_NAME = 'test-ensure-parent-dirs';

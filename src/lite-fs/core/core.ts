@@ -1,28 +1,5 @@
 import { deleteDB, openDB, type IDBPDatabase } from "idb";
-
-export const STORE_NAME = 'entries';
-export const INDEX_BY_PARENT = 'by-parent';
-
-export type DBTimeStamp = number;
-
-export function now(): DBTimeStamp {
-    return Date.now();
-}
-
-export interface DBFileEntry {
-    type: 'file';
-    content: Uint8Array;
-    parent: string;
-    mtime: DBTimeStamp;
-}
-
-export interface DBFolderEntry {
-    type: 'folder';
-    parent: string;
-    mtime: DBTimeStamp;
-}
-
-export type DBEntry = DBFileEntry | DBFolderEntry;
+import { INDEX_BY_PARENT, STORE_NAME } from "./const.ts";
 
 export interface FSCore {
     getDB(): Promise<IDBPDatabase>;

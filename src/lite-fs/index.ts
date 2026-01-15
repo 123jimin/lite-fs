@@ -1,4 +1,4 @@
-import { createFSCore, type FSCore } from "./core.ts";
+import { createFSCore, type FSCore } from "./core/index.ts";
 import { createFileOps, type FileOps } from "./file-ops.ts";
 
 export class LiteFS {
