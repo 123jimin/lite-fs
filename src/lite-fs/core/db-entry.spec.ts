@@ -6,8 +6,9 @@ import { deleteDB, openDB, type IDBPDatabase } from 'idb';
 import { isFSError } from "../../error.ts";
 
 import { STORE_NAME, INDEX_BY_PARENT } from "./const.ts";
-import type { DBFileEntry, DBFolderEntry, DBEntry, } from "./db-entry.ts";
-import { now, ensureParentDirs } from "./db-entry.ts";
+import type { DBFileEntry, DBFolderEntry } from "./db-entry.ts";
+import { now, ensureParentDirs, createDBFolderEntry, putEntryByPath, getEntryByPath, createDBFileEntry } from "./db-entry.ts";
+import type { AbsoluteFolderPath } from '../../path.ts';
 
 describe('ensureParentDirs', () => {
     const DB_NAME = 'test-ensure-parent-dirs';
@@ -31,7 +32,7 @@ describe('ensureParentDirs', () => {
         it('should create a single parent directory', async () => {
             await ensureParentDirs(db, '/foo/bar.txt');
 
-            const entry = await db.get(STORE_NAME, '/foo/');
+            const entry = await getEntryByPath(db, "/foo/");
             assert.isNotNull(entry);
             assert.strictEqual(entry.type, 'folder');
             assert.strictEqual(entry.parent, '/');
@@ -40,9 +41,9 @@ describe('ensureParentDirs', () => {
         it('should create multiple nested parent directories', async () => {
             await ensureParentDirs(db, '/a/b/c/file.txt');
 
-            const entryA = await db.get(STORE_NAME, '/a/');
-            const entryB = await db.get(STORE_NAME, '/a/b/');
-            const entryC = await db.get(STORE_NAME, '/a/b/c/');
+            const entryA = await getEntryByPath(db, "/a/");
+            const entryB = await getEntryByPath(db, "/a/b/");
+            const entryC = await getEntryByPath(db, "/a/b/c/");
 
             assert.isNotNull(entryA);
             assert.strictEqual(entryA.type, 'folder');
@@ -50,11 +51,11 @@ describe('ensureParentDirs', () => {
 
             assert.isNotNull(entryB);
             assert.strictEqual(entryB.type, 'folder');
-            assert.strictEqual(entryB.parent, '/a/');
+            assert.strictEqual(entryB.parent, '/a');
 
             assert.isNotNull(entryC);
             assert.strictEqual(entryC.type, 'folder');
-            assert.strictEqual(entryC.parent, '/a/b/');
+            assert.strictEqual(entryC.parent, '/a/b');
         });
 
         it('should set mtime on created directories', async () => {
@@ -62,7 +63,8 @@ describe('ensureParentDirs', () => {
             await ensureParentDirs(db, '/foo/bar.txt');
             const after = now();
 
-            const entry: DBFolderEntry = await db.get(STORE_NAME, '/foo/');
+            const entry = await getEntryByPath(db, "/foo/");
+            assert.isNotNull(entry);
             assert.isAtLeast(entry.mtime, before);
             assert.isAtMost(entry.mtime, after);
         });
@@ -70,51 +72,39 @@ describe('ensureParentDirs', () => {
 
     context('when parent directories already exist', () => {
         it('should not modify existing folder', async () => {
-            const existingEntry: DBFolderEntry = {
-                type: 'folder',
-                parent: '/',
-                mtime: 1000,
-            };
-            await db.put(STORE_NAME, existingEntry, '/foo/');
+            const existing_entry: DBFolderEntry = createDBFolderEntry("/foo/");
+            existing_entry.mtime = 1000;
+            await putEntryByPath(db, "/foo/", existing_entry);
 
             await ensureParentDirs(db, '/foo/bar.txt');
 
-            const entry: DBFolderEntry = await db.get(STORE_NAME, '/foo/');
+            const entry = await getEntryByPath(db, "/foo/");
+            assert.isNotNull(entry);
             assert.strictEqual(entry.mtime, 1000);
         });
 
         it('should create only missing directories in a partial path', async () => {
-            const existingEntry: DBFolderEntry = {
-                type: 'folder',
-                parent: '/',
-                mtime: 1000,
-            };
-            await db.put(STORE_NAME, existingEntry, '/a/');
+            const existing_entry: DBFolderEntry = createDBFolderEntry("/a/");
+            existing_entry.mtime = 1000;
+            await putEntryByPath(db, "/a/", existing_entry);
 
             await ensureParentDirs(db, '/a/b/c/file.txt');
 
-            const entryA: DBFolderEntry = await db.get(STORE_NAME, '/a/');
-            assert.strictEqual(entryA.mtime, 1000);
-
-            const entryB = await db.get(STORE_NAME, '/a/b/');
-            assert.isNotNull(entryB);
-            assert.strictEqual(entryB.type, 'folder');
-
-            const entryC = await db.get(STORE_NAME, '/a/b/c/');
-            assert.isNotNull(entryC);
-            assert.strictEqual(entryC.type, 'folder');
+            const entryA = await getEntryByPath(db, "/a/");
+            assert.strictEqual(entryA?.mtime, 1000);
+            
+            const entryB = await getEntryByPath(db, "/a/b/");
+            assert.strictEqual(entryB?.type, 'folder');
+            
+            const entryC = await getEntryByPath(db, "/a/b/c/");
+            assert.strictEqual(entryC?.type, 'folder');
         });
     });
 
     context('when a file exists in the path', () => {
         it('should throw ENOTDIR when a file blocks the path', async () => {
-            const fileEntry: DBFileEntry = {
-                type: 'file',
-                content: new Uint8Array([1, 2, 3]),
-                parent: '/',
-                mtime: now(),
-            };
-            await db.put(STORE_NAME, fileEntry, '/foo');
+            const file_entry: DBFileEntry = createDBFileEntry("/foo", new Uint8Array([1, 2, 3]));
+            await putEntryByPath(db, "/foo", file_entry);
 
             try {
                 await ensureParentDirs(db, '/foo/bar.txt');
@@ -129,21 +119,12 @@ describe('ensureParentDirs', () => {
         });
 
         it('should throw ENOTDIR when a file blocks a nested path', async () => {
-            const folderEntry: DBFolderEntry = {
-                type: 'folder',
-                parent: '/',
-                mtime: now(),
-            };
-            await db.put(STORE_NAME, folderEntry, '/a/');
+            const folder_entry = createDBFolderEntry("/a/");
+            await putEntryByPath(db, "/a/", folder_entry);
 
-            const fileEntry: DBFileEntry = {
-                type: 'file',
-                content: new Uint8Array(),
-                parent: '/a/',
-                mtime: now(),
-            };
-            await db.put(STORE_NAME, fileEntry, '/a/b');
-
+            const file_entry = createDBFileEntry("/a/b", new Uint8Array());
+            await putEntryByPath(db, "/a/b", file_entry);
+            
             try {
                 await ensureParentDirs(db, '/a/b/c/file.txt');
                 assert.fail('Expected ENOTDIR error');
@@ -151,29 +132,6 @@ describe('ensureParentDirs', () => {
                 assert.isTrue(isFSError(err, 'ENOTDIR'));
                 if (isFSError(err, 'ENOTDIR')) {
                     assert.strictEqual(err.path, '/a/b');
-                }
-            }
-        });
-    });
-
-    context('when entry exists but is not a folder', () => {
-        it('should throw ENOTDIR for non-folder entry at folder path', async () => {
-            // Simulate a corrupted or unexpected entry type at a folder path
-            const badEntry: DBEntry = {
-                type: 'file',
-                content: new Uint8Array(),
-                parent: '/',
-                mtime: now(),
-            };
-            await db.put(STORE_NAME, badEntry, '/foo/');
-
-            try {
-                await ensureParentDirs(db, '/foo/bar.txt');
-                assert.fail('Expected ENOTDIR error');
-            } catch (err) {
-                assert.isTrue(isFSError(err, 'ENOTDIR'));
-                if (isFSError(err, 'ENOTDIR')) {
-                    assert.strictEqual(err.path, '/foo/');
                 }
             }
         });
@@ -190,9 +148,9 @@ describe('ensureParentDirs', () => {
         it('should handle deeply nested paths', async () => {
             await ensureParentDirs(db, '/a/b/c/d/e/f/g/file.txt');
 
-            const paths = ['/a/', '/a/b/', '/a/b/c/', '/a/b/c/d/', '/a/b/c/d/e/', '/a/b/c/d/e/f/', '/a/b/c/d/e/f/g/'];
+            const paths: AbsoluteFolderPath[] = ['/a/', '/a/b/', '/a/b/c/', '/a/b/c/d/', '/a/b/c/d/e/', '/a/b/c/d/e/f/', '/a/b/c/d/e/f/g/'];
             for (const path of paths) {
-                const entry = await db.get(STORE_NAME, path);
+                const entry = await getEntryByPath(db, path);
                 assert.isNotNull(entry, `Expected folder at ${path}`);
                 assert.strictEqual(entry.type, 'folder');
             }
@@ -201,8 +159,8 @@ describe('ensureParentDirs', () => {
         it('should not create the file itself', async () => {
             await ensureParentDirs(db, '/foo/bar.txt');
 
-            const fileEntry = await db.get(STORE_NAME, '/foo/bar.txt');
-            assert.isUndefined(fileEntry);
+            const file_entry = await getEntryByPath(db, "/foo/bar.txt");
+            assert.isNull(file_entry);
         });
     });
 });

@@ -2,22 +2,14 @@ import type { IDBPDatabase } from "idb";
 
 import { FSError } from "../../error.ts";
 import type { AbsoluteFilePath, AbsoluteFolderPath, AbsolutePath } from "../../path.ts";
-import { getParentPath, isAbsolutePath } from "../../path.ts";
+import { getParentPath } from "../../path.ts";
 import { STORE_NAME } from "./const.ts";
+import { toStoragePath, type StoragePath } from "./path.ts";
 
 export type DBTimeStamp = number;
 
 export function now(): DBTimeStamp {
     return Date.now();
-}
-
-export type StoragePath = '/' | `/${string}`;
-
-export function toStoragePath(path: string): StoragePath {
-    if(!isAbsolutePath(path)) throw FSError.EINVAL(path, "toStoragePath");
-
-    if(path === '/') return '/';
-    return (path.endsWith('/') ? path.slice(0, -1) : path) as StoragePath;
 }
 
 export interface DBFileEntry {
@@ -70,27 +62,18 @@ export async function ensureParentDirs(db: IDBPDatabase, path: AbsolutePath): Pr
 
     let curr_path: AbsoluteFolderPath = '/';
     for (const segment of segments) {
-        const file_path = (curr_path + segment) as AbsoluteFilePath;        
-        const file_entry = await getEntryByPath(db, file_path);
-        if(file_entry != null) {
-            throw FSError.ENOTDIR(file_path, 'mkdir');
-        }
+        curr_path = (curr_path + segment + '/') as AbsoluteFolderPath;
         
-        curr_path = (file_path + '/') as AbsoluteFolderPath;
         const folder_entry = await getEntryByPath(db, curr_path);
         if (folder_entry == null) {
-            const new_entry: DBFolderEntry = {
-                type: 'folder',
-                parent: getParentPath(curr_path),
-                mtime: now(),
-            };
+            const new_entry: DBFolderEntry = createDBFolderEntry(curr_path);
 
             await putEntryByPath(db, curr_path, new_entry);
             continue;
         }
 
         if(folder_entry.type !== 'folder') {
-            throw FSError.ENOTDIR(curr_path, 'mkdir');
+            throw FSError.ENOTDIR(curr_path.slice(0, -1), 'mkdir');
         }
     }
 }

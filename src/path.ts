@@ -64,8 +64,16 @@ export function validatePath(path: string, type?: "folder" | "file"): AbsolutePa
 
     const is_folder_path = path.endsWith('/');
 
-    if ((type === "folder") !== is_folder_path) {
-        throw FSError.EINVAL(path, "validatePath");
+    switch(type) {
+        case (void 0):
+        case null:
+            break;
+        case 'file':
+            if(is_folder_path) throw FSError.EINVAL(path, "validatePath");
+            break;
+        case 'folder':
+            if(!is_folder_path) throw FSError.EINVAL(path, "validatePath");
+            break;
     }
 
     const segments = path.split("/");
