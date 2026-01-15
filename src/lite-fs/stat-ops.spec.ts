@@ -46,6 +46,13 @@ describe("stat", () => {
     });
 
     context("stating directories", () => {
+        it("should return Stats for root directory", async () => {
+            const stats = await stat_ops.stat("/");
+
+            assert.isFalse(stats.isFile());
+            assert.isTrue(stats.isDirectory());
+        });
+
         it("should return Stats for a directory at root level", async () => {
             await dir_ops.mkdir("/mydir/");
 
@@ -142,16 +149,6 @@ describe("stat", () => {
             await dir_ops.mkdir("/foo/");
             try {
                 await stat_ops.stat("/foo/bar/");
-                assert.fail("Expected error");
-            } catch (err) {
-                assert.isTrue(isFSError(err, "ENOENT"));
-            }
-        });
-
-        it("should throw ENOENT for root directory", async () => {
-            // Root is not stored as an entry in the database
-            try {
-                await stat_ops.stat("/");
                 assert.fail("Expected error");
             } catch (err) {
                 assert.isTrue(isFSError(err, "ENOENT"));

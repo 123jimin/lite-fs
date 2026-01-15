@@ -21,6 +21,13 @@ export function createStatOps(core: FSCore): StatOps {
     return {
         async stat(in_path: string): Promise<Stats> {
             const path = validatePath(in_path);
+            if(path === '/') {
+                return {
+                    isFile: () => false,
+                    isDirectory: () => true,
+                    mtime: new Date(0),
+                };
+            }
 
             const db = await core.getDB();
             const entry = await getEntryByPath(db, path);
