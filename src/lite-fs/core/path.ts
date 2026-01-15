@@ -1,6 +1,7 @@
 import { FSError } from "../../error.ts";
 import { isAbsolutePath } from "../../path.ts";
 
+/** Folders are stored without a trailing `/`. */
 export type StoragePath = '/' | `/${string}`;
 
 export function toStoragePath(path: string): StoragePath {
