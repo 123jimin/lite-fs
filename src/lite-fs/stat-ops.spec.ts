@@ -6,13 +6,13 @@ import { createFileOps, type FileOps } from "./file-ops.ts";
 import { createStatOps, type StatOps } from "./stat-ops.ts";
 import { isFSError } from "../error.ts";
 
-describe("stat", function () {
+describe("stat", () => {
     let core: FSCore;
     let dir_ops: DirOps;
     let file_ops: FileOps;
     let stat_ops: StatOps;
 
-    beforeEach(async function () {
+    beforeEach(async () => {
         core = createFSCore("test-fs-stat");
         await core.reset();
         dir_ops = createDirOps(core);
@@ -20,12 +20,12 @@ describe("stat", function () {
         stat_ops = createStatOps(core);
     });
 
-    afterEach(async function () {
+    afterEach(async () => {
         await core.reset();
     });
 
-    context("stating files", function () {
-        it("should return Stats for a file at root level", async function () {
+    context("stating files", () => {
+        it("should return Stats for a file at root level", async () => {
             await file_ops.writeFile("/test.txt", "content");
 
             const stats = await stat_ops.stat("/test.txt");
@@ -34,7 +34,7 @@ describe("stat", function () {
             assert.isFalse(stats.isDirectory());
         });
 
-        it("should return Stats for a file in nested directory", async function () {
+        it("should return Stats for a file in nested directory", async () => {
             await dir_ops.mkdir("/foo/bar/", { recursive: true });
             await file_ops.writeFile("/foo/bar/file.txt", "content");
 
@@ -45,8 +45,8 @@ describe("stat", function () {
         });
     });
 
-    context("stating directories", function () {
-        it("should return Stats for a directory at root level", async function () {
+    context("stating directories", () => {
+        it("should return Stats for a directory at root level", async () => {
             await dir_ops.mkdir("/mydir/");
 
             const stats = await stat_ops.stat("/mydir/");
@@ -55,7 +55,7 @@ describe("stat", function () {
             assert.isTrue(stats.isDirectory());
         });
 
-        it("should return Stats for a nested directory", async function () {
+        it("should return Stats for a nested directory", async () => {
             await dir_ops.mkdir("/foo/bar/baz/", { recursive: true });
 
             const stats = await stat_ops.stat("/foo/bar/baz/");
@@ -64,7 +64,7 @@ describe("stat", function () {
             assert.isTrue(stats.isDirectory());
         });
 
-        it("should return Stats for intermediate directories", async function () {
+        it("should return Stats for intermediate directories", async () => {
             await dir_ops.mkdir("/a/b/c/", { recursive: true });
 
             const stats_a = await stat_ops.stat("/a/");
@@ -75,8 +75,8 @@ describe("stat", function () {
         });
     });
 
-    context("mtime", function () {
-        it("should return mtime as a Date object for files", async function () {
+    context("mtime", () => {
+        it("should return mtime as a Date object for files", async () => {
             await file_ops.writeFile("/test.txt", "content");
 
             const stats = await stat_ops.stat("/test.txt");
@@ -84,7 +84,7 @@ describe("stat", function () {
             assert.instanceOf(stats.mtime, Date);
         });
 
-        it("should return recent mtime for newly created file", async function () {
+        it("should return recent mtime for newly created file", async () => {
             const before = Date.now();
             await file_ops.writeFile("/test.txt", "content");
             const after = Date.now();
@@ -96,7 +96,7 @@ describe("stat", function () {
             assert.isAtMost(mtime_ms, after);
         });
 
-        it("should update mtime when file is overwritten", async function () {
+        it("should update mtime when file is overwritten", async () => {
             await file_ops.writeFile("/test.txt", "original");
             const stats_before = await stat_ops.stat("/test.txt");
 
@@ -110,8 +110,8 @@ describe("stat", function () {
         });
     });
 
-    context("error cases", function () {
-        it("should throw ENOENT for non-existent file", async function () {
+    context("error cases", () => {
+        it("should throw ENOENT for non-existent file", async () => {
             try {
                 await stat_ops.stat("/nonexistent.txt");
                 assert.fail("Expected error");
@@ -120,7 +120,7 @@ describe("stat", function () {
             }
         });
 
-        it("should throw ENOENT for non-existent directory", async function () {
+        it("should throw ENOENT for non-existent directory", async () => {
             try {
                 await stat_ops.stat("/nonexistent/");
                 assert.fail("Expected error");
@@ -129,7 +129,7 @@ describe("stat", function () {
             }
         });
 
-        it("should throw ENOENT for file in non-existent directory", async function () {
+        it("should throw ENOENT for file in non-existent directory", async () => {
             try {
                 await stat_ops.stat("/foo/bar/file.txt");
                 assert.fail("Expected error");
@@ -138,7 +138,7 @@ describe("stat", function () {
             }
         });
 
-        it("should throw ENOENT for non-existent nested directory", async function () {
+        it("should throw ENOENT for non-existent nested directory", async () => {
             await dir_ops.mkdir("/foo/");
             try {
                 await stat_ops.stat("/foo/bar/");
@@ -148,7 +148,7 @@ describe("stat", function () {
             }
         });
 
-        it("should throw ENOENT for root directory", async function () {
+        it("should throw ENOENT for root directory", async () => {
             // Root is not stored as an entry in the database
             try {
                 await stat_ops.stat("/");
@@ -159,8 +159,8 @@ describe("stat", function () {
         });
     });
 
-    context("path validation", function () {
-        it("should throw EINVAL for non-absolute path", async function () {
+    context("path validation", () => {
+        it("should throw EINVAL for non-absolute path", async () => {
             try {
                 await stat_ops.stat("relative/path.txt");
                 assert.fail("Expected error");
@@ -170,8 +170,8 @@ describe("stat", function () {
         });
     });
 
-    context("distinguishing files and directories", function () {
-        it("should correctly distinguish file from directory with similar names", async function () {
+    context("distinguishing files and directories", () => {
+        it("should correctly distinguish file from directory with similar names", async () => {
             await file_ops.writeFile("/item", "file content");
             await dir_ops.mkdir("/item-dir/");
 
@@ -185,7 +185,7 @@ describe("stat", function () {
             assert.isTrue(dir_stats.isDirectory());
         });
 
-        it("should handle file and directory in same parent", async function () {
+        it("should handle file and directory in same parent", async () => {
             await dir_ops.mkdir("/parent/");
             await file_ops.writeFile("/parent/file", "content");
             await dir_ops.mkdir("/parent/subdir/");
