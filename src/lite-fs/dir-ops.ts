@@ -1,3 +1,5 @@
+export type { DirOps } from "../api/dir-ops.ts";
+
 import type { Dirent, MkdirOptions } from "../api/index.ts";
 import { FSError } from "../error.ts";
 import { getBaseName, getParentPath, validatePath } from "../path.ts";
@@ -9,14 +11,10 @@ import {
     type DBEntry,
     type FSCore,
 } from "./core/index.ts";
+
 import { INDEX_BY_PARENT, STORE_NAME } from "./core/const.ts";
 import { toStoragePath } from "./core/path.ts";
-
-export interface DirOps {
-    mkdir(path: string, options?: MkdirOptions): Promise<void>;
-    readdir(path: string): Promise<string[]>;
-    readdir(path: string, options: { withFileTypes: true }): Promise<Dirent[]>;
-}
+import type { DirOps } from "../api/dir-ops.ts";
 
 function createDirent(entry: DBEntry, name: string): Dirent {
     const is_file = entry.type === 'file';
