@@ -4,7 +4,7 @@ import { createFSCore, type FSCore } from "./core/index.ts";
 import { createDirOps, type DirOps } from "./dir-ops.ts";
 import { createFileOps, type FileOps } from "./file-ops.ts";
 import { createStatOps, type StatOps } from "./stat-ops.ts";
-import { isFSError } from "../error.ts";
+import { assertFSError } from "../error.ts";
 
 describe("stat", () => {
     let core: FSCore;
@@ -123,7 +123,7 @@ describe("stat", () => {
                 await stat_ops.stat("/nonexistent.txt");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOENT"));
+                assertFSError(err, 'ENOENT');
             }
         });
 
@@ -132,7 +132,7 @@ describe("stat", () => {
                 await stat_ops.stat("/nonexistent/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOENT"));
+                assertFSError(err, 'ENOENT');
             }
         });
 
@@ -141,7 +141,7 @@ describe("stat", () => {
                 await stat_ops.stat("/foo/bar/file.txt");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOENT"));
+                assertFSError(err, 'ENOENT');
             }
         });
 
@@ -151,7 +151,7 @@ describe("stat", () => {
                 await stat_ops.stat("/foo/bar/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOENT"));
+                assertFSError(err, 'ENOENT');
             }
         });
     });
@@ -162,7 +162,7 @@ describe("stat", () => {
                 await stat_ops.stat("relative/path.txt");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
+                assertFSError(err, 'EINVAL');
             }
         });
     });

@@ -6,7 +6,7 @@ import { createDirOps, type DirOps } from "./dir-ops.ts";
 import { createFileOps, type FileOps } from "./file-ops.ts";
 import { createRenameOps, type RenameOps } from "./rename-ops.ts";
 import { createStatOps, type StatOps } from "./stat-ops.ts";
-import { isFSError } from "../error.ts";
+import { assertFSError } from "../error.ts";
 
 describe("rename", () => {
     let core: FSCore;
@@ -42,7 +42,7 @@ describe("rename", () => {
                 await stat_ops.stat("/a.txt");
                 assert.fail("Expected ENOENT");
             } catch (e) {
-                assert.isTrue(isFSError(e, "ENOENT"));
+                assertFSError(e, 'ENOENT');
             }
         });
 
@@ -59,7 +59,7 @@ describe("rename", () => {
                 await stat_ops.stat("/note.txt");
                 assert.fail("Expected ENOENT");
             } catch (e) {
-                assert.isTrue(isFSError(e, "ENOENT"));
+                assertFSError(e, 'ENOENT');
             }
         });
 
@@ -77,7 +77,7 @@ describe("rename", () => {
                 await rename_ops.rename("/missing.txt", "/new.txt");
                 assert.fail("Expected ENOENT");
             } catch (e) {
-                assert.isTrue(isFSError(e, "ENOENT"));
+                assertFSError(e, 'ENOENT');
             }
         });
 
@@ -88,7 +88,7 @@ describe("rename", () => {
                 await rename_ops.rename("/a.txt", "/nope/a.txt");
                 assert.fail("Expected ENOENT");
             } catch (e) {
-                assert.isTrue(isFSError(e, "ENOENT"));
+                assertFSError(e, 'ENOENT');
             }
         });
 
@@ -104,7 +104,7 @@ describe("rename", () => {
                 await file_ops.readFile("/from.txt", "utf-8");
                 assert.fail("Expected ENOENT");
             } catch(e) {
-                assert.isTrue(isFSError(e, 'ENOENT'));
+                assertFSError(e, 'ENOENT');
             }
         });
 
@@ -116,7 +116,7 @@ describe("rename", () => {
                 await rename_ops.rename("/file.txt", "/dir/");
                 assert.fail("Expected EISDIR");
             } catch (e) {
-                assert.isTrue(isFSError(e, "EISDIR"));
+                assertFSError(e, 'EISDIR');
             }
         });
 
@@ -125,7 +125,7 @@ describe("rename", () => {
                 await rename_ops.rename("/", "/x/");
                 assert.fail("Expected EINVAL");
             } catch (e) {
-                assert.isTrue(isFSError(e, "EINVAL"));
+                assertFSError(e, 'EINVAL');
             }
         });
 
@@ -136,7 +136,7 @@ describe("rename", () => {
                 await rename_ops.rename("/x/", "/");
                 assert.fail("Expected EINVAL");
             } catch (e) {
-                assert.isTrue(isFSError(e, "EINVAL"));
+                assertFSError(e, 'EINVAL');
             }
         });
     });
@@ -156,7 +156,7 @@ describe("rename", () => {
                 await stat_ops.stat("/empty/");
                 assert.fail("Expected ENOENT");
             } catch (e) {
-                assert.isTrue(isFSError(e, "ENOENT"));
+                assertFSError(e, 'ENOENT');
             }
         });
 
@@ -173,7 +173,7 @@ describe("rename", () => {
                 await stat_ops.stat("/parent/");
                 assert.fail("Expected ENOENT");
             } catch (e) {
-                assert.isTrue(isFSError(e, "ENOENT"));
+                assertFSError(e, 'ENOENT');
             }
         });
 
@@ -182,7 +182,7 @@ describe("rename", () => {
                 await rename_ops.rename("/ghost/", "/alive/");
                 assert.fail("Expected ENOENT");
             } catch (e) {
-                assert.isTrue(isFSError(e, "ENOENT"));
+                assertFSError(e, 'ENOENT');
             }
         });
 
@@ -193,7 +193,7 @@ describe("rename", () => {
                 await rename_ops.rename("/adir/", "/afile.txt");
                 assert.fail("Expected ENOTDIR");
             } catch (e) {
-                assert.isTrue(isFSError(e, "ENOTDIR"));
+                assertFSError(e, 'ENOTDIR');
             }
         });
 
@@ -204,7 +204,7 @@ describe("rename", () => {
                 await rename_ops.rename("/a/", "/a/b/c/");
                 assert.fail("Expected EINVAL");
             } catch (e) {
-                assert.isTrue(isFSError(e, "EINVAL"));
+                assertFSError(e, 'EINVAL');
             }
         });
     });

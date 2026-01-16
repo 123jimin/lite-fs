@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { createFSCore, type FSCore } from "./core/index.ts";
 import { createDirOps, type DirOps } from "./dir-ops.ts";
 import { createFileOps, type FileOps } from "./file-ops.ts";
-import { isFSError } from "../error.ts";
+import { assertFSError } from "../error.ts";
 
 describe("mkdir", () => {
     let core: FSCore;
@@ -42,7 +42,7 @@ describe("mkdir", () => {
                 await dir_ops.mkdir("/foo/bar/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOENT"));
+                assertFSError(err, 'ENOENT');
             }
         });
 
@@ -52,7 +52,7 @@ describe("mkdir", () => {
                 await dir_ops.mkdir("/foo/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EEXIST"));
+                assertFSError(err, 'EEXIST');
             }
         });
 
@@ -62,7 +62,7 @@ describe("mkdir", () => {
                 await dir_ops.mkdir("/foo/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EEXIST"));
+                assertFSError(err, 'EEXIST');
             }
         });
 
@@ -72,7 +72,7 @@ describe("mkdir", () => {
                 await dir_ops.mkdir("/foo/bar/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOTDIR"));
+                assertFSError(err, 'ENOTDIR');
             }
         });
     });
@@ -119,7 +119,7 @@ describe("mkdir", () => {
                 await dir_ops.mkdir("/foo/", { recursive: true });
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EEXIST"));
+                assertFSError(err, 'EEXIST');
             }
         });
 
@@ -129,7 +129,7 @@ describe("mkdir", () => {
                 await dir_ops.mkdir("/foo/bar/", { recursive: true });
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOTDIR"));
+                assertFSError(err, 'ENOTDIR');
             }
         });
     });
@@ -154,7 +154,7 @@ describe("mkdir", () => {
                 await dir_ops.mkdir("foo/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
+                assertFSError(err, 'EINVAL');
             }
         });
     });
@@ -310,7 +310,7 @@ describe("readdir", () => {
                 await dir_ops.readdir("/nonexistent/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOENT"));
+                assertFSError(err, 'ENOENT');
             }
         });
 
@@ -320,7 +320,7 @@ describe("readdir", () => {
                 await dir_ops.readdir("/foo/bar/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOENT"));
+                assertFSError(err, 'ENOENT');
             }
         });
 
@@ -330,7 +330,7 @@ describe("readdir", () => {
                 await dir_ops.readdir("/file/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOTDIR"));
+                assertFSError(err, 'ENOTDIR');
             }
         });
     });
@@ -341,7 +341,7 @@ describe("readdir", () => {
                 await dir_ops.readdir("foo/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
+                assertFSError(err, 'EINVAL');
             }
         });
 
@@ -350,7 +350,7 @@ describe("readdir", () => {
                 await dir_ops.readdir("/foo");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
+                assertFSError(err, 'EINVAL');
             }
         });
 
@@ -359,7 +359,7 @@ describe("readdir", () => {
                 await dir_ops.readdir("/foo//bar/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
+                assertFSError(err, 'EINVAL');
             }
         });
     });

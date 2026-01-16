@@ -70,3 +70,14 @@ export function isFSError(error: unknown, code?: FSErrorCode): error is FSError 
     if (code != null && error.code !== code) return false;
     return true;
 }
+
+/**
+ * Checks whether a given `error` is an FSError with a specific code.
+ * If not, throws `error`.
+ */
+export function assertFSError(error: unknown, code?: FSErrorCode): error is FSError {
+    if(!(error instanceof FSError)) throw error;
+    if (code != null && error.code !== code) throw error;
+
+    return true;
+}

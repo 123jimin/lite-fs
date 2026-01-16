@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { createFSCore, type FSCore } from "./core/index.ts";
 import { createDirOps, type DirOps } from "./dir-ops.ts";
 import { createFileOps, type FileOps } from "./file-ops.ts";
-import { isFSError } from "../error.ts";
+import { assertFSError } from "../error.ts";
 
 describe("writeFile", () => {
     let core: FSCore;
@@ -95,7 +95,7 @@ describe("writeFile", () => {
                 await file_ops.writeFile("/file/child.txt", "child");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOTDIR"));
+                assertFSError(err, 'ENOTDIR');
             }
         });
 
@@ -105,7 +105,7 @@ describe("writeFile", () => {
                 await file_ops.writeFile("/file/a/b/c.txt", "deep");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOTDIR"));
+                assertFSError(err, 'ENOTDIR');
             }
         });
     });
@@ -116,7 +116,7 @@ describe("writeFile", () => {
                 await file_ops.writeFile("relative.txt", "content");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
+                assertFSError(err, 'EINVAL');
             }
         });
     });
@@ -211,7 +211,7 @@ describe("readFile", () => {
                 await file_ops.readFile("/nonexistent.txt");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOENT"));
+                assertFSError(err, 'ENOENT');
             }
         });
 
@@ -221,7 +221,7 @@ describe("readFile", () => {
                 await file_ops.readFile("/foo/nonexistent.txt");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOENT"));
+                assertFSError(err, 'ENOENT');
             }
         });
 
@@ -230,7 +230,7 @@ describe("readFile", () => {
                 await file_ops.readFile("/nonexistent/file.txt");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "ENOENT"));
+                assertFSError(err, 'ENOENT');
             }
         });
 
@@ -240,7 +240,7 @@ describe("readFile", () => {
                 await file_ops.readFile("/mydir");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EISDIR"));
+                assertFSError(err, 'EISDIR');
             }
         });
     });
@@ -251,7 +251,7 @@ describe("readFile", () => {
                 await file_ops.readFile("relative.txt");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
+                assertFSError(err, 'EINVAL');
             }
         });
 
@@ -260,7 +260,7 @@ describe("readFile", () => {
                 await file_ops.readFile("/folder/");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
+                assertFSError(err, 'EINVAL');
             }
         });
 
@@ -269,7 +269,7 @@ describe("readFile", () => {
                 await file_ops.readFile("/foo//bar.txt");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
+                assertFSError(err, 'EINVAL');
             }
         });
 
@@ -278,7 +278,7 @@ describe("readFile", () => {
                 await file_ops.readFile("/foo/../bar.txt");
                 assert.fail("Expected error");
             } catch (err) {
-                assert.isTrue(isFSError(err, "EINVAL"));
+                assertFSError(err, 'EINVAL');
             }
         });
     });

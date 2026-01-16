@@ -5,7 +5,7 @@ import { createDirOps, type DirOps } from "./dir-ops.ts";
 import { createFileOps, type FileOps } from "./file-ops.ts";
 import { createStatOps, type StatOps } from "./stat-ops.ts";
 import { createRemoveOps, type RemoveOps } from "./remove-ops.ts";
-import { isFSError } from "../error.ts";
+import { assertFSError } from "../error.ts";
 
 describe("unlink", () => {
     let core: FSCore;
@@ -35,7 +35,7 @@ describe("unlink", () => {
             await stat_ops.stat("/to-delete.txt");
             assert.fail("Expected error");
         } catch (e) {
-            assert.isTrue(isFSError(e, "ENOENT"));
+            assertFSError(e, 'ENOENT');
         }
     });
 
@@ -47,7 +47,7 @@ describe("unlink", () => {
             await remove_ops.unlink("/i-am-a-folder");
             assert.fail("Expected error");
         } catch (e) {
-            assert.isTrue(isFSError(e, "EISDIR"));
+            assertFSError(e, 'EISDIR');
         }
     });
 
@@ -56,7 +56,7 @@ describe("unlink", () => {
             await remove_ops.unlink("/ghost.txt");
             assert.fail("Expected error.");
         } catch (e) {
-            assert.isTrue(isFSError(e, "ENOENT"));
+            assertFSError(e, 'ENOENT');
         }
     });
 });
@@ -89,7 +89,7 @@ describe("rm", () => {
             await stat_ops.stat("/delete-me.bin");
             assert.fail();
         } catch (e) {
-            assert.isTrue(isFSError(e, "ENOENT"));
+            assertFSError(e, 'ENOENT');
         }
     });
 
@@ -101,7 +101,7 @@ describe("rm", () => {
             await stat_ops.stat("/empty-box/");
             assert.fail();
         } catch (e) {
-            assert.isTrue(isFSError(e, "ENOENT"));
+            assertFSError(e, 'ENOENT');
         }
     });
 
@@ -113,7 +113,7 @@ describe("rm", () => {
             await remove_ops.rm("/not-empty/", { recursive: false });
             assert.fail("Expected error");
         } catch (e) {
-            assert.isTrue(isFSError(e, "ENOTEMPTY"));
+            assertFSError(e, 'ENOTEMPTY');
         }
     });
 
@@ -127,7 +127,7 @@ describe("rm", () => {
             await stat_ops.stat("/parent/");
             assert.fail("Expected error");
         } catch (e) {
-            assert.isTrue(isFSError(e, "ENOENT"));
+            assertFSError(e, 'ENOENT');
         }
     });
 

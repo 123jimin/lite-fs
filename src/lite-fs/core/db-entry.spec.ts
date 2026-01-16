@@ -3,7 +3,7 @@ import 'fake-indexeddb/auto';
 import { assert } from 'chai';
 import { deleteDB, openDB, type IDBPDatabase } from 'idb';
 
-import { isFSError } from "../../error.ts";
+import { assertFSError, isFSError } from "../../error.ts";
 
 import { STORE_NAME, INDEX_BY_PARENT } from "./const.ts";
 import type { DBFileEntry, DBFolderEntry } from "./db-entry.ts";
@@ -110,11 +110,12 @@ describe('ensureParentDirs', () => {
                 await ensureParentDirs(db, '/foo/bar.txt');
                 assert.fail('Expected ENOTDIR error');
             } catch (err) {
-                assert.isTrue(isFSError(err, 'ENOTDIR'));
-                if (isFSError(err, 'ENOTDIR')) {
-                    assert.strictEqual(err.path, '/foo');
-                    assert.strictEqual(err.syscall, 'mkdir');
+                if(!assertFSError(err, 'ENOTDIR')) {
+                    assert.fail('(this fail is unreachable)');
                 }
+
+                assert.strictEqual(err.path, '/foo');
+                assert.strictEqual(err.syscall, 'mkdir');
             }
         });
 
@@ -129,7 +130,7 @@ describe('ensureParentDirs', () => {
                 await ensureParentDirs(db, '/a/b/c/file.txt');
                 assert.fail('Expected ENOTDIR error');
             } catch (err) {
-                assert.isTrue(isFSError(err, 'ENOTDIR'));
+                assertFSError(err, 'ENOTDIR');
                 if (isFSError(err, 'ENOTDIR')) {
                     assert.strictEqual(err.path, '/a/b');
                 }

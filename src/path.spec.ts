@@ -8,7 +8,7 @@ import {
     joinPath,
 } from './path.ts';
 
-import { isFSError } from './error.ts';
+import { assertFSError } from './error.ts';
 
 describe("isAbsolutePath", () => {
     context("when path starts with /", () => {
@@ -115,7 +115,7 @@ describe("validatePath", () => {
                 validatePath("foo/bar");
                 assert.fail("should have thrown");
             } catch (e) {
-                assert.isTrue(isFSError(e, 'EINVAL'));
+                assertFSError(e, 'EINVAL');
             }
         });
 
@@ -124,7 +124,7 @@ describe("validatePath", () => {
                 validatePath("");
                 assert.fail("should have thrown");
             } catch (e) {
-                assert.isTrue(isFSError(e, 'EINVAL'));
+                assertFSError(e, 'EINVAL');
             }
         });
     });
@@ -135,7 +135,7 @@ describe("validatePath", () => {
                 validatePath("/foo//bar");
                 assert.fail("should have thrown");
             } catch (e) {
-                assert.isTrue(isFSError(e, 'EINVAL'));
+                assertFSError(e, 'EINVAL');
             }
         });
 
@@ -144,7 +144,7 @@ describe("validatePath", () => {
                 validatePath("/foo/bar//");
                 assert.fail("should have thrown");
             } catch (e) {
-                assert.isTrue(isFSError(e, 'EINVAL'));
+                assertFSError(e, 'EINVAL');
             }
         });
     });
@@ -155,7 +155,7 @@ describe("validatePath", () => {
                 validatePath("/foo/./bar");
                 assert.fail("should have thrown");
             } catch (e) {
-                assert.isTrue(isFSError(e, 'EINVAL'));
+                assertFSError(e, 'EINVAL');
             }
         });
 
@@ -164,7 +164,7 @@ describe("validatePath", () => {
                 validatePath("/./foo");
                 assert.fail("should have thrown");
             } catch (e) {
-                assert.isTrue(isFSError(e, 'EINVAL'));
+                assertFSError(e, 'EINVAL');
             }
         });
     });
@@ -175,7 +175,7 @@ describe("validatePath", () => {
                 validatePath("/foo/../bar");
                 assert.fail("should have thrown");
             } catch (e) {
-                assert.isTrue(isFSError(e, 'EINVAL'));
+                assertFSError(e, 'EINVAL');
             }
         });
 
@@ -184,7 +184,7 @@ describe("validatePath", () => {
                 validatePath("/../foo");
                 assert.fail("should have thrown");
             } catch (e) {
-                assert.isTrue(isFSError(e, 'EINVAL'));
+                assertFSError(e, 'EINVAL');
             }
         });
     });
@@ -203,7 +203,7 @@ describe("validatePath", () => {
                 validatePath("/foo/bar", "folder");
                 assert.fail("should have thrown");
             } catch (e) {
-                assert.isTrue(isFSError(e, 'EINVAL'));
+                assertFSError(e, 'EINVAL');
             }
         });
 
@@ -212,7 +212,7 @@ describe("validatePath", () => {
                 validatePath("/foo/bar.txt", "folder");
                 assert.fail("should have thrown");
             } catch (e) {
-                assert.isTrue(isFSError(e, 'EINVAL'));
+                assertFSError(e, 'EINVAL');
             }
         });
     });
@@ -231,7 +231,7 @@ describe("validatePath", () => {
                 validatePath("/foo/bar/", "file");
                 assert.fail("should have thrown");
             } catch (e) {
-                assert.isTrue(isFSError(e, 'EINVAL'));
+                assertFSError(e, 'EINVAL');
             }
         });
 
@@ -240,7 +240,7 @@ describe("validatePath", () => {
                 validatePath("/", "file");
                 assert.fail("should have thrown");
             } catch (e) {
-                assert.isTrue(isFSError(e, 'EINVAL'));
+                assertFSError(e, 'EINVAL');
             }
         });
     });
