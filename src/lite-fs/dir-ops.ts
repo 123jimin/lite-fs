@@ -1,4 +1,4 @@
-import type { Dirent, MkdirOptions } from "../api.ts";
+import type { Dirent, MkdirOptions } from "../api/index.ts";
 import { FSError } from "../error.ts";
 import { getBaseName, getParentPath, validatePath } from "../path.ts";
 import {

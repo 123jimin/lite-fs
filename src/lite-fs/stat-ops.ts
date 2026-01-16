@@ -1,4 +1,4 @@
-import type { Stats } from "../api.ts";
+import type { Stats } from "../api/index.ts";
 import { FSError } from "../error.ts";
 import { validatePath } from "../path.ts";
 import { getEntryByPath, type DBEntry, type FSCore } from "./core/index.ts";

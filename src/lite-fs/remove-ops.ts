@@ -1,4 +1,4 @@
-import type { RmOptions } from "../api.ts";
+import type { RmOptions } from "../api/index.ts";
 import { FSError } from "../error.ts";
 import { isFolderPath, validatePath } from "../path.ts";
 import { STORE_NAME, toStoragePath, type FSCore, type DBEntry, INDEX_BY_PARENT, type StoragePath } from "./core/index.ts";

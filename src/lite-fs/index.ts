@@ -1,4 +1,4 @@
-import type { Dirent, FileSystemAPI, MkdirOptions, RmOptions, Stats } from "../api.ts";
+import type { Dirent, FileSystemAPI, MkdirOptions, RmOptions, Stats } from "../api/index.ts";
 import { createFSCore, type FSCore } from "./core/index.ts";
 import { createDirOps, type DirOps } from "./dir-ops.ts";
 import { createFileOps, type FileOps } from "./file-ops.ts";
