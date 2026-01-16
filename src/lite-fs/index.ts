@@ -1,5 +1,5 @@
 import type { Dirent, FileSystemAPI, MkdirOptions, RmOptions, Stats } from "../api.ts";
-import { createFSCore } from "./core/index.ts";
+import { createFSCore, type FSCore } from "./core/index.ts";
 import { createDirOps, type DirOps } from "./dir-ops.ts";
 import { createFileOps, type FileOps } from "./file-ops.ts";
 import { createRemoveOps, type RemoveOps } from "./remove-ops.ts";
@@ -7,6 +7,8 @@ import { createRenameOps, type RenameOps } from "./rename-ops.ts";
 import { createStatOps, type StatOps } from "./stat-ops.ts";
 
 export class LiteFS implements FileSystemAPI {
+    readonly #core: FSCore;
+
     readonly #file_ops: FileOps;
     readonly #dir_ops: DirOps;
     readonly #remove_ops: RemoveOps;
@@ -14,7 +16,7 @@ export class LiteFS implements FileSystemAPI {
     readonly #stat_ops: StatOps
 
     constructor(db_name: string = 'lite-fs') {
-        const core = createFSCore(db_name);
+        const core = this.#core = createFSCore(db_name);
 
         this.#file_ops = createFileOps(core);
         this.#dir_ops = createDirOps(core);
@@ -60,5 +62,13 @@ export class LiteFS implements FileSystemAPI {
 
     stat(path: string): Promise<Stats> {
         return this.#stat_ops.stat(path);
+    }
+
+    dumpFiles(): Promise<Array<[path: string, content: Uint8Array]>> {
+        return this.#core.dumpFiles();
+    }
+
+    reset(): Promise<void> {
+        return this.#core.reset();
     }
 }
