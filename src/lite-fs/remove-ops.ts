@@ -1,12 +1,9 @@
-import type { RmOptions } from "../api/index.ts";
+export type { RemoveOps } from "../api/remove-ops.ts";
+import type { RemoveOps, RmOptions } from "../api/remove-ops.ts";
+
 import { FSError } from "../error.ts";
 import { isFolderPath, validatePath } from "../path.ts";
 import { STORE_NAME, toStoragePath, type FSCore, type DBEntry, INDEX_BY_PARENT, type StoragePath } from "./core/index.ts";
-
-export interface RemoveOps {
-    unlink(path: string): Promise<void>;
-    rm(path: string, options?: RmOptions): Promise<void>;
-}
 
 export function createRemoveOps(core: FSCore): RemoveOps {
     return {

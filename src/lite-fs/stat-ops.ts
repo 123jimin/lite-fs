@@ -1,11 +1,9 @@
-import type { Stats } from "../api/index.ts";
+export type { StatOps } from "../api/stat-ops.ts";
+import type { StatOps, Stats } from "../api/stat-ops.ts";
+
 import { FSError } from "../error.ts";
 import { validatePath } from "../path.ts";
 import { getEntryByPath, type DBEntry, type FSCore } from "./core/index.ts";
-
-export interface StatOps {
-    stat(path: string): Promise<Stats>;
-}
 
 function createStats(entry: DBEntry): Stats {
     const is_file = entry.type === 'file';

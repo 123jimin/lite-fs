@@ -1,3 +1,6 @@
+export type { RenameOps } from "../api/rename-ops.ts";
+import type { RenameOps } from "../api/rename-ops.ts";
+
 import { FSError } from "../error.ts";
 import { getBaseName, getParentPath, isFolderPath, validatePath } from "../path.ts";
 import { 
@@ -10,11 +13,6 @@ import {
     type StoragePath, 
 } from "./core/index.ts";
 
-export interface RenameOps {
-    rename(old_path: string, new_path: string): Promise<void>;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function createRenameOps(core: FSCore): RenameOps {
     return {
         async rename(old_in: string, new_in: string): Promise<void> {

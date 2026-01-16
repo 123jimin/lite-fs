@@ -1,13 +1,10 @@
+export type { FileOps } from "../api/file-ops.ts";
+import type { FileOps } from "../api/file-ops.ts";
+
 import { validatePath } from "../path.ts";
 import { FSError } from "../error.ts";
 
 import { createDBFileEntry, ensureParentDirs, getEntryByPath, putEntryByPath, type FSCore } from "./core/index.ts";
-
-export interface FileOps {
-    readFile(path: string): Promise<Uint8Array>;
-    readFile(path: string, encoding: 'utf-8'): Promise<string>;
-    writeFile(path: string, content: string | Uint8Array): Promise<void>;
-}
 
 export function createFileOps(core: FSCore): FileOps {
     async function readFile(path: string): Promise<Uint8Array>;
