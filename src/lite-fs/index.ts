@@ -1,10 +1,11 @@
-import type { Dirent, FileSystemAPI, MkdirOptions, RmOptions, Stats } from "../api/index.ts";
+import type { Dirent, FileSystemAPI, MkdirOptions, RmOptions, Stats, WatchEvent, WatchOptions } from "../api/index.ts";
 import { createFSCore, type FSCore } from "./core/index.ts";
 import { createDirOps, type DirOps } from "./dir-ops.ts";
 import { createFileOps, type FileOps } from "./file-ops.ts";
 import { createRemoveOps, type RemoveOps } from "./remove-ops.ts";
 import { createRenameOps, type RenameOps } from "./rename-ops.ts";
 import { createStatOps, type StatOps } from "./stat-ops.ts";
+import { createWatchOps, type WatchOps } from "./watch-ops.ts";
 
 export class LiteFS implements FileSystemAPI {
     readonly #core: FSCore;
@@ -14,6 +15,7 @@ export class LiteFS implements FileSystemAPI {
     readonly #remove_ops: RemoveOps;
     readonly #rename_ops: RenameOps;
     readonly #stat_ops: StatOps
+    readonly #watch_ops: WatchOps;
 
     constructor(db_name: string = 'lite-fs') {
         const core = this.#core = createFSCore(db_name);
@@ -23,6 +25,7 @@ export class LiteFS implements FileSystemAPI {
         this.#remove_ops = createRemoveOps(core);
         this.#rename_ops = createRenameOps(core);
         this.#stat_ops = createStatOps(core);
+        this.#watch_ops = createWatchOps(core);
     }
 
     readFile(path: string): Promise<Uint8Array>;
@@ -62,6 +65,10 @@ export class LiteFS implements FileSystemAPI {
 
     stat(path: string): Promise<Stats> {
         return this.#stat_ops.stat(path);
+    }
+
+    watch(path: string, options?: WatchOptions): AsyncIterator<WatchEvent> {
+        return this.#watch_ops.watch(path, options);
     }
 
     dumpFiles(): Promise<Array<[path: string, content: Uint8Array]>> {
