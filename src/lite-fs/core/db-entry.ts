@@ -1,5 +1,7 @@
 import type { IDBPDatabase } from "idb";
 
+import type { FSBuffer } from "../../api/index.ts";
+
 import { FSError } from "../../error.ts";
 import type { AbsoluteFilePath, AbsoluteFolderPath, AbsolutePath } from "../../path.ts";
 import { getParentPath } from "../../path.ts";
@@ -14,12 +16,12 @@ export function now(): DBTimeStamp {
 
 export interface DBFileEntry {
     type: 'file';
-    content: Uint8Array;
+    content: FSBuffer;
     parent: StoragePath;
     mtime: DBTimeStamp;
 }
 
-export function createDBFileEntry(path: AbsoluteFilePath, content: Uint8Array): DBFileEntry {
+export function createDBFileEntry(path: AbsoluteFilePath, content: FSBuffer): DBFileEntry {
     return {
         type: 'file',
         content,

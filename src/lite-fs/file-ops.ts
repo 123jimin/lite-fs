@@ -3,13 +3,14 @@ import type { FileOps } from "../api/file-ops.ts";
 
 import { validatePath } from "../path.ts";
 import { FSError } from "../error.ts";
+import type { FSBuffer } from "../api/index.ts";
 
 import { createDBFileEntry, ensureParentDirs, getEntryByPath, putEntryByPath, type FSCore } from "./core/index.ts";
 
 export function createFileOps(core: FSCore): FileOps {
-    async function readFile(path: string): Promise<Uint8Array>;
+    async function readFile(path: string): Promise<FSBuffer>;
     async function readFile(path: string, encoding: 'utf-8'): Promise<string>;
-    async function readFile(in_path: string, encoding?: 'utf-8'): Promise<Uint8Array | string> {
+    async function readFile(in_path: string, encoding?: 'utf-8'): Promise<FSBuffer | string> {
         const path = validatePath(in_path, 'file');
 
         const db = await core.getDB();
@@ -28,7 +29,7 @@ export function createFileOps(core: FSCore): FileOps {
             : content;
     }
 
-    async function writeFile(in_path: string, content: string | Uint8Array): Promise<void> {
+    async function writeFile(in_path: string, content: string | FSBuffer): Promise<void> {
         const path = validatePath(in_path, 'file');
 
         const db = await core.getDB();

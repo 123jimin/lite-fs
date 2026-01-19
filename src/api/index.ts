@@ -1,3 +1,5 @@
+export type { FSBuffer } from "./buffer.ts";
+
 export type { Dirent, MkdirOptions } from "./dir-ops.ts";
 export type { Stats } from "./stat-ops.ts";
 export type { RmOptions } from "./remove-ops.ts";

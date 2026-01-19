@@ -1,13 +1,13 @@
 import { deleteDB, openDB, type IDBPDatabase } from "idb";
 import { INDEX_BY_PARENT, STORE_NAME } from "./const.ts";
 import type { DBEntry } from "./db-entry.ts";
-import type { WatchEvent } from "../../api/watch-ops.ts";
+import type { FSBuffer, WatchEvent } from "../../api/index.ts";
 
 export type WatchCallback = (event: WatchEvent) => void;
 
 export interface FSCore {
     getDB(): Promise<IDBPDatabase>;
-    dumpFiles(): Promise<Array<[path: string, content: Uint8Array]>>;
+    dumpFiles(): Promise<Array<[path: string, content: FSBuffer]>>;
     reset(): Promise<void>;
 
     emit(event: WatchEvent): void;
@@ -32,12 +32,12 @@ export function createFSCore(db_name: string): FSCore {
 
     return {
         getDB,
-        async dumpFiles(): Promise<Array<[path: string, content: Uint8Array]>> {
+        async dumpFiles(): Promise<Array<[path: string, content: FSBuffer]>> {
             const db = await getDB();
             const tx = db.transaction(STORE_NAME, 'readonly');
             const store = tx.objectStore(STORE_NAME);
 
-            const out: Array<[path: string, content: Uint8Array]> = [];
+            const out: Array<[path: string, content: FSBuffer]> = [];
             for (let cursor = await store.openCursor(); cursor; cursor = await cursor.continue()) {
                 const key = cursor.key.toString();
                 const value = cursor.value as DBEntry;

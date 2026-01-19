@@ -1,4 +1,4 @@
-import type { Dirent, FileSystemAPI, MkdirOptions, RmOptions, Stats, WatchEvent, WatchOptions } from "../api/index.ts";
+import type { Dirent, FileSystemAPI, FSBuffer, MkdirOptions, RmOptions, Stats, WatchEvent, WatchOptions } from "../api/index.ts";
 import { createFSCore, type FSCore } from "./core/index.ts";
 import { createDirOps, type DirOps } from "./dir-ops.ts";
 import { createFileOps, type FileOps } from "./file-ops.ts";
@@ -28,7 +28,7 @@ export class LiteFS implements FileSystemAPI {
         this.#watch_ops = createWatchOps(core);
     }
 
-    readFile(path: string): Promise<Uint8Array>;
+    readFile(path: string): Promise<FSBuffer>;
     readFile(path: string, encoding: 'utf-8'): Promise<string>;
     readFile(path: string, encoding?: 'utf-8') {
         return encoding
@@ -36,7 +36,7 @@ export class LiteFS implements FileSystemAPI {
             : this.#file_ops.readFile(path);
     }
 
-    writeFile(path: string, content: string | Uint8Array) {
+    writeFile(path: string, content: string | FSBuffer) {
         return this.#file_ops.writeFile(path, content);
     }
 
@@ -71,7 +71,7 @@ export class LiteFS implements FileSystemAPI {
         return this.#watch_ops.watch(path, options);
     }
 
-    dumpFiles(): Promise<Array<[path: string, content: Uint8Array]>> {
+    dumpFiles(): Promise<Array<[path: string, content: FSBuffer]>> {
         return this.#core.dumpFiles();
     }
 
