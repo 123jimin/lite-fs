@@ -67,7 +67,7 @@ export class LiteFS implements FileSystemAPI {
         return this.#stat_ops.stat(path);
     }
 
-    watch(path: string, options?: WatchOptions): AsyncIterator<WatchEvent> {
+    watch(path: string, options?: WatchOptions): AsyncIterableIterator<WatchEvent> {
         return this.#watch_ops.watch(path, options);
     }
 

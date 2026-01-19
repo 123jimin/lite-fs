@@ -20,5 +20,5 @@ export interface WatchOptions {
 }
 
 export interface WatchOps {
-    watch(path: string, options?: WatchOptions): AsyncIterator<WatchEvent>;
+    watch(path: string, options?: WatchOptions): AsyncIterableIterator<WatchEvent>;
 }

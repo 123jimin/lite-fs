@@ -6,7 +6,7 @@ import type { FSCore } from "./core/index.ts";
 
 export function createWatchOps(core: FSCore): WatchOps {
     return {
-        watch(in_path: string, options?: WatchOptions): AsyncIterator<WatchEvent> {
+        watch(in_path: string, options?: WatchOptions): AsyncIterableIterator<WatchEvent> {
             const path = validatePath(in_path);
 
             const queue: WatchEvent[] = [];
@@ -56,6 +56,9 @@ export function createWatchOps(core: FSCore): WatchOps {
             }
 
             return {
+                [Symbol.asyncIterator]() {
+                    return this;
+                },
                 next(): Promise<IteratorResult<WatchEvent>> {
                     if(done) {
                         return Promise.resolve({value: (void 0), done: true});
