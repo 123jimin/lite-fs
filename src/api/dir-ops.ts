@@ -1,8 +1,10 @@
+import type { AbsoluteFolderPath } from "../path.ts";
+
 export interface Dirent {
     isFile(): boolean;
     isDirectory(): boolean;
 
-    /** The file name (not full path) */
+    parentPath: AbsoluteFolderPath;
     name: string;
 }
 

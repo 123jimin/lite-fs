@@ -2,8 +2,9 @@ export type { RenameOps } from "../api/rename-ops.ts";
 import type { RenameOps } from "../api/rename-ops.ts";
 
 import { FSError } from "../error.ts";
-import { getBaseName, getParentPath, isFolderPath, validatePath } from "../path.ts";
+import { getBaseName, getParentPath, isFolderPath, validatePath, type AbsolutePath } from "../path.ts";
 import { 
+    fromFolderStoragePath,
     INDEX_BY_PARENT,
     now,
     STORE_NAME,
@@ -71,7 +72,7 @@ export function createRenameOps(core: FSCore): RenameOps {
             }
 
             // 4. Collect all items to move (if it's a directory)
-            const items_to_move: Array<{ old_key: string; new_key: string; entry: DBEntry }> = [{
+            const items_to_move: Array<{ old_key: StoragePath; new_key: StoragePath; entry: DBEntry }> = [{
                 old_key, new_key,
                 entry: { ...source_entry, parent: target_parent_key, mtime: now() },
             }];
@@ -82,18 +83,18 @@ export function createRenameOps(core: FSCore): RenameOps {
                 const { old_key, new_key, entry } = items_to_move[i]!;
                 if(entry.type !== 'folder') continue;
                 
-                let cursor = await index.openCursor(old_key as StoragePath);
+                let cursor = await index.openCursor(old_key);
                 while (cursor) {
-                    const child_old_key = cursor.primaryKey as string;
+                    const child_old_key = cursor.primaryKey.toString() as StoragePath;
                     const child_entry = cursor.value as DBEntry;
                     const child_name = getBaseName(child_old_key + (child_entry.type === 'folder' ? '/' : ''));
                     
-                    const child_new_path = new_key === '/' ? `/${child_name}` : `${new_key}/${child_name}`;
+                    const child_new_path: AbsolutePath = `${fromFolderStoragePath(new_key)}${child_name}`;
                     
                     items_to_move.push({
                         old_key: child_old_key,
                         new_key: toStoragePath(child_new_path),
-                        entry: { ...child_entry, parent: new_key as StoragePath }
+                        entry: { ...child_entry, parent: new_key }
                     });
 
                     cursor = await cursor.continue();

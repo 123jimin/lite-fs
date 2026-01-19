@@ -13,13 +13,14 @@ import {
 } from "./core/index.ts";
 
 import { INDEX_BY_PARENT, STORE_NAME } from "./core/const.ts";
-import { toStoragePath } from "./core/path.ts";
+import { fromFolderStoragePath, toStoragePath } from "./core/path.ts";
 
 function createDirent(entry: DBEntry, name: string): Dirent {
     const is_file = entry.type === 'file';
     return {
         isFile: () => is_file,
         isDirectory: () => !is_file,
+        parentPath: fromFolderStoragePath(entry.parent),
         name,
     };
 }
