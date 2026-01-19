@@ -34,12 +34,20 @@ export function createFileOps(core: FSCore): FileOps {
         const db = await core.getDB();
         await ensureParentDirs(db, path);
 
+        const existing = await getEntryByPath(db, path);
+        const is_new_file = !existing || existing.type !== 'file';
+
         const bytes = typeof content === 'string'
             ? new TextEncoder().encode(content)
             : content;
 
         const entry = createDBFileEntry(path, bytes);
         await putEntryByPath(db, path, entry);
+
+        core.emit({
+            eventType: is_new_file ? 'rename' : 'change',
+            filename: path,
+        });
     }
 
     return { readFile, writeFile };

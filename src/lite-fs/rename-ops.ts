@@ -111,6 +111,9 @@ export function createRenameOps(core: FSCore): RenameOps {
             }
 
             await tx.done;
+
+            core.emit({eventType: 'rename', filename: old_path});
+            core.emit({eventType: 'rename', filename: new_path});
         }
     };
 }

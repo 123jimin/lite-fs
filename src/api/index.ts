@@ -1,7 +1,7 @@
 export type { Dirent, MkdirOptions } from "./dir-ops.ts";
 export type { Stats } from "./stat-ops.ts";
 export type { RmOptions } from "./remove-ops.ts";
-export type { WatchEvent, WatchOptions } from "./watch-ops.ts";
+export type { WatchEvent, WatchOptions , RenameWatchEvent, ChangeWatchEvent } from "./watch-ops.ts";
 
 import type { DirOps } from "./dir-ops.ts";
 import type { FileOps } from "./file-ops.ts";

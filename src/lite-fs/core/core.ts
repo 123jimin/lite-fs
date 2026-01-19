@@ -1,15 +1,22 @@
 import { deleteDB, openDB, type IDBPDatabase } from "idb";
 import { INDEX_BY_PARENT, STORE_NAME } from "./const.ts";
 import type { DBEntry } from "./db-entry.ts";
+import type { WatchEvent } from "../../api/watch-ops.ts";
+
+export type WatchCallback = (event: WatchEvent) => void;
 
 export interface FSCore {
     getDB(): Promise<IDBPDatabase>;
     dumpFiles(): Promise<Array<[path: string, content: Uint8Array]>>;
     reset(): Promise<void>;
+
+    emit(event: WatchEvent): void;
+    subscribe(callback: WatchCallback): () => void;
 }
 
 export function createFSCore(db_name: string): FSCore {
     let db_promise: Promise<IDBPDatabase> | null = null;
+    const subscribers = new Set<WatchCallback>();
 
     const getDB = (): Promise<IDBPDatabase> => {
         if (!db_promise) {
@@ -49,5 +56,20 @@ export function createFSCore(db_name: string): FSCore {
             }
             await deleteDB(db_name);
         },
+        emit(event: WatchEvent): void {
+            for(const callback of subscribers) {
+                try {
+                    callback(event);
+                } catch {
+                    /* do nothing */
+                }
+            }
+        },
+        subscribe(callback: WatchCallback): () => void {
+            subscribers.add(callback);
+            return () => {
+                subscribers.delete(callback);
+            };
+        }
     };
 }

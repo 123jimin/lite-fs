@@ -29,6 +29,8 @@ export function createRemoveOps(core: FSCore): RemoveOps {
 
             await tx.store.delete(key);
             await tx.done;
+
+            core.emit({eventType: 'rename', filename: path});
         },
         async rm(in_path: string, options?: RmOptions): Promise<void> {
             const path = validatePath(in_path);
@@ -63,6 +65,8 @@ export function createRemoveOps(core: FSCore): RemoveOps {
 
                 await tx.store.delete(file_key);
                 await tx.done;
+                
+                core.emit({eventType: 'rename', filename: path});
                 return;
             }
             
@@ -96,6 +100,8 @@ export function createRemoveOps(core: FSCore): RemoveOps {
 
                 await tx.store.delete(dir_key);
                 await tx.done;
+
+                core.emit({eventType: 'rename', filename: path});
                 return;
             }
 
@@ -125,6 +131,9 @@ export function createRemoveOps(core: FSCore): RemoveOps {
             }
 
             await tx.done;
+            
+            // Emit watch event for top-level path only.
+            core.emit({eventType: 'rename', filename: path});
             return;
         }
     };

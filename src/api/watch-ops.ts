@@ -5,8 +5,14 @@ export interface RenameWatchEvent {
     filename: AbsolutePath;
 }
 
+export interface ChangeWatchEvent {
+    eventType: 'change';
+    filename: AbsolutePath;
+}
+
 export type WatchEvent =
     | RenameWatchEvent
+    | ChangeWatchEvent
     ;
 
 export interface WatchOptions {

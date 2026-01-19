@@ -60,6 +60,8 @@ export function createDirOps(core: FSCore): DirOps {
 
         const entry = createDBFolderEntry(path);
         await putEntryByPath(db, path, entry);
+
+        core.emit({eventType: 'rename', filename: path});
     }
 
     async function readdir(path: string): Promise<string[]>;
