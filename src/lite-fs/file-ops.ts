@@ -33,7 +33,10 @@ export function createFileOps(core: FSCore): FileOps {
         const path = validatePath(in_path, 'file');
 
         const db = await core.getDB();
-        await ensureParentDirs(db, path);
+        const created_dirs = await ensureParentDirs(db, path);
+        for (const dir of created_dirs) {
+            core.emit({eventType: 'rename', filename: dir});
+        }
 
         const existing = await getEntryByPath(db, path);
         const is_new_file = !existing || existing.type !== 'file';

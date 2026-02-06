@@ -72,6 +72,21 @@ describe("watch", () => {
             await watcher.return?.();
         });
 
+        it("should emit 'rename' for intermediate dirs created by recursive mkdir", async () => {
+            await dir_ops.mkdir("/foo/");
+
+            const watcher = watch_ops.watch("/foo/");
+
+            await dir_ops.mkdir("/foo/bar/baz/", { recursive: true });
+
+            const result = await watcher.next();
+            assert.isFalse(result.done);
+            assert.equal(result.value.eventType, "rename");
+            assert.equal(result.value.filename, "/foo/bar/");
+
+            await watcher.return?.();
+        });
+
         it("should not emit events for nested descendants", async () => {
             await dir_ops.mkdir("/parent/child/", { recursive: true });
 

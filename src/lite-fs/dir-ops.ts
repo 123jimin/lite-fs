@@ -44,7 +44,10 @@ export function createDirOps(core: FSCore): DirOps {
         }
 
         if (options?.recursive) {
-            await ensureParentDirs(db, path);
+            const created = await ensureParentDirs(db, path);
+            for (const dir of created) {
+                core.emit({eventType: 'rename', filename: dir});
+            }
         } else {
             // Non-recursive: parent must exist.
             const parent_path = getParentPath(path);

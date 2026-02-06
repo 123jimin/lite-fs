@@ -58,10 +58,11 @@ export async function putEntryByPath(db: IDBPDatabase, path: AbsolutePath, entry
     await db.put(STORE_NAME, entry, toStoragePath(path));
 }
 
-export async function ensureParentDirs(db: IDBPDatabase, path: AbsolutePath): Promise<void> {
+export async function ensureParentDirs(db: IDBPDatabase, path: AbsolutePath): Promise<AbsoluteFolderPath[]> {
     const segments = path.split('/').filter(Boolean);
     segments.pop();
 
+    const created: AbsoluteFolderPath[] = [];
     let curr_path: AbsoluteFolderPath = '/';
     for (const segment of segments) {
         curr_path = (curr_path + segment + '/') as AbsoluteFolderPath;
@@ -71,6 +72,7 @@ export async function ensureParentDirs(db: IDBPDatabase, path: AbsolutePath): Pr
             const new_entry: DBFolderEntry = createDBFolderEntry(curr_path);
 
             await putEntryByPath(db, curr_path, new_entry);
+            created.push(curr_path);
             continue;
         }
 
@@ -78,4 +80,6 @@ export async function ensureParentDirs(db: IDBPDatabase, path: AbsolutePath): Pr
             throw FSError.ENOTDIR(curr_path.slice(0, -1), 'mkdir');
         }
     }
+
+    return created;
 }
