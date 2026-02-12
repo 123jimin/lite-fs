@@ -108,7 +108,9 @@ describe("stat", () => {
             const stats_before = await stat_ops.stat("/test.txt");
 
             // Small delay to ensure different timestamp
-            await new Promise((resolve) => setTimeout(resolve, 10));
+            await new Promise((resolve) => {
+                setTimeout(resolve, 10);
+            });
 
             await file_ops.writeFile("/test.txt", "updated");
             const stats_after = await stat_ops.stat("/test.txt");

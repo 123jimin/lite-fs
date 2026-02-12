@@ -50,9 +50,11 @@ export function createFSCore(db_name: string): FSCore {
         },
         async reset() {
             if(db_promise) {
-                const db = await db_promise;
-                db.close();
+                const local_db_promise = db_promise;
                 db_promise = null;
+
+                const db = await local_db_promise;
+                db.close();
             }
             await deleteDB(db_name);
         },
