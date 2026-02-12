@@ -32,7 +32,7 @@ export class FSError extends Error {
             this.syscall = syscall;
         }
 
-        if (Object.hasOwn(Error, 'captureStackTrace')) {
+        if(Object.hasOwn(Error, 'captureStackTrace')) {
             (Error as unknown as {captureStackTrace: (obj: object, constructor?: unknown) => void}).captureStackTrace(this, FSError);
         }
     }
@@ -66,8 +66,8 @@ export class FSError extends Error {
  * Type guard to check if an error is an FSError with a specific code.
  */
 export function isFSError(error: unknown, code?: FSErrorCode): error is FSError {
-    if (!(error instanceof FSError)) return false;
-    if (code != null && error.code !== code) return false;
+    if(!(error instanceof FSError)) return false;
+    if(code != null && error.code !== code) return false;
     return true;
 }
 
@@ -77,7 +77,7 @@ export function isFSError(error: unknown, code?: FSErrorCode): error is FSError 
  */
 export function assertFSError(error: unknown, code?: FSErrorCode): error is FSError {
     if(!(error instanceof FSError)) throw error;
-    if (code != null && error.code !== code) throw error;
+    if(code != null && error.code !== code) throw error;
 
     return true;
 }

@@ -1,14 +1,14 @@
 import 'fake-indexeddb/auto';
 
-import { assert } from 'chai';
-import { deleteDB, openDB, type IDBPDatabase } from 'idb';
+import {assert} from 'chai';
+import {deleteDB, openDB, type IDBPDatabase} from 'idb';
 
-import { assertFSError, isFSError } from "../../error.ts";
+import {assertFSError, isFSError} from "../../error.ts";
 
-import { STORE_NAME, INDEX_BY_PARENT } from "./const.ts";
-import type { DBFileEntry, DBFolderEntry } from "./db-entry.ts";
-import { now, ensureParentDirs, createDBFolderEntry, putEntryByPath, getEntryByPath, createDBFileEntry } from "./db-entry.ts";
-import type { AbsoluteFolderPath } from '../../path.ts';
+import {STORE_NAME, INDEX_BY_PARENT} from "./const.ts";
+import type {DBFileEntry, DBFolderEntry} from "./db-entry.ts";
+import {now, ensureParentDirs, createDBFolderEntry, putEntryByPath, getEntryByPath, createDBFileEntry} from "./db-entry.ts";
+import type {AbsoluteFolderPath} from '../../path.ts';
 
 describe('ensureParentDirs', () => {
     const DB_NAME = 'test-ensure-parent-dirs';
@@ -18,7 +18,7 @@ describe('ensureParentDirs', () => {
         db = await openDB(DB_NAME, 1, {
             upgrade(db) {
                 const store = db.createObjectStore(STORE_NAME);
-                store.createIndex(INDEX_BY_PARENT, 'parent', { unique: false });
+                store.createIndex(INDEX_BY_PARENT, 'parent', {unique: false});
             },
         });
     });
@@ -92,10 +92,10 @@ describe('ensureParentDirs', () => {
 
             const entryA = await getEntryByPath(db, "/a/");
             assert.strictEqual(entryA?.mtime, 1000);
-            
+
             const entryB = await getEntryByPath(db, "/a/b/");
             assert.strictEqual(entryB?.type, 'folder');
-            
+
             const entryC = await getEntryByPath(db, "/a/b/c/");
             assert.strictEqual(entryC?.type, 'folder');
         });
@@ -125,13 +125,13 @@ describe('ensureParentDirs', () => {
 
             const file_entry = createDBFileEntry("/a/b", new Uint8Array());
             await putEntryByPath(db, "/a/b", file_entry);
-            
+
             try {
                 await ensureParentDirs(db, '/a/b/c/file.txt');
                 assert.fail('Expected ENOTDIR error');
             } catch (err) {
                 assertFSError(err, 'ENOTDIR');
-                if (isFSError(err, 'ENOTDIR')) {
+                if(isFSError(err, 'ENOTDIR')) {
                     assert.strictEqual(err.path, '/a/b');
                 }
             }
@@ -150,7 +150,7 @@ describe('ensureParentDirs', () => {
             await ensureParentDirs(db, '/a/b/c/d/e/f/g/file.txt');
 
             const paths: AbsoluteFolderPath[] = ['/a/', '/a/b/', '/a/b/c/', '/a/b/c/d/', '/a/b/c/d/e/', '/a/b/c/d/e/f/', '/a/b/c/d/e/f/g/'];
-            for (const path of paths) {
+            for(const path of paths) {
                 const entry = await getEntryByPath(db, path);
                 assert.isNotNull(entry, `Expected folder at ${path}`);
                 assert.strictEqual(entry.type, 'folder');

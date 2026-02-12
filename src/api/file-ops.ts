@@ -1,4 +1,4 @@
-import type { FSBuffer } from "./buffer.ts";
+import type {FSBuffer} from "./buffer.ts";
 
 export interface FileOps {
     readFile(path: string): Promise<FSBuffer>;

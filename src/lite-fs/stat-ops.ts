@@ -1,9 +1,9 @@
-export type { StatOps } from "../api/stat-ops.ts";
-import type { StatOps, Stats } from "../api/stat-ops.ts";
+export type {StatOps} from "../api/stat-ops.ts";
+import type {StatOps, Stats} from "../api/stat-ops.ts";
 
-import { FSError } from "../error.ts";
-import { validatePath } from "../path.ts";
-import { getEntryByPath, type DBEntry, type FSCore } from "./core/index.ts";
+import {FSError} from "../error.ts";
+import {validatePath} from "../path.ts";
+import {getEntryByPath, type DBEntry, type FSCore} from "./core/index.ts";
 
 function createStats(entry: DBEntry): Stats {
     const is_file = entry.type === 'file';
@@ -30,7 +30,7 @@ export function createStatOps(core: FSCore): StatOps {
             const db = await core.getDB();
             const entry = await getEntryByPath(db, path);
 
-            if (!entry) {
+            if(!entry) {
                 throw FSError.ENOENT(path, 'stat');
             }
 

@@ -1,11 +1,9 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 import "fake-indexeddb/auto";
-import { assert } from "chai";
-import { createFSCore, type FSCore } from "./core/index.ts";
-import { createDirOps, type DirOps } from "./dir-ops.ts";
-import { createFileOps, type FileOps } from "./file-ops.ts";
-import { assertFSError } from "../error.ts";
+import {assert} from "chai";
+import {createFSCore, type FSCore} from "./core/index.ts";
+import {createDirOps, type DirOps} from "./dir-ops.ts";
+import {createFileOps, type FileOps} from "./file-ops.ts";
+import {assertFSError} from "../error.ts";
 
 describe("mkdir", () => {
     let core: FSCore;
@@ -79,7 +77,7 @@ describe("mkdir", () => {
 
     context("with recursive option", () => {
         it("should create nested directories", async () => {
-            await dir_ops.mkdir("/foo/bar/baz/", { recursive: true });
+            await dir_ops.mkdir("/foo/bar/baz/", {recursive: true});
 
             const root_entries = await dir_ops.readdir("/");
             assert.deepEqual(root_entries, ["foo"]);
@@ -92,22 +90,22 @@ describe("mkdir", () => {
         });
 
         it("should create single directory at root level", async () => {
-            await dir_ops.mkdir("/foo/", { recursive: true });
+            await dir_ops.mkdir("/foo/", {recursive: true});
             const entries = await dir_ops.readdir("/");
             assert.deepEqual(entries, ["foo"]);
         });
 
         it("should succeed when directory already exists", async () => {
-            await dir_ops.mkdir("/foo/", { recursive: true });
-            await dir_ops.mkdir("/foo/", { recursive: true });
+            await dir_ops.mkdir("/foo/", {recursive: true});
+            await dir_ops.mkdir("/foo/", {recursive: true});
 
             const entries = await dir_ops.readdir("/");
             assert.deepEqual(entries, ["foo"]);
         });
 
         it("should succeed when partial path already exists", async () => {
-            await dir_ops.mkdir("/foo/", { recursive: true });
-            await dir_ops.mkdir("/foo/bar/baz/", { recursive: true });
+            await dir_ops.mkdir("/foo/", {recursive: true});
+            await dir_ops.mkdir("/foo/bar/baz/", {recursive: true});
 
             const entries = await dir_ops.readdir("/foo/bar/");
             assert.deepEqual(entries, ["baz"]);
@@ -116,7 +114,7 @@ describe("mkdir", () => {
         it("should throw EEXIST when a file exists at the path", async () => {
             await file_ops.writeFile("/foo", "content");
             try {
-                await dir_ops.mkdir("/foo/", { recursive: true });
+                await dir_ops.mkdir("/foo/", {recursive: true});
                 assert.fail("Expected error");
             } catch (err) {
                 assertFSError(err, 'EEXIST');
@@ -126,7 +124,7 @@ describe("mkdir", () => {
         it("should throw ENOTDIR when a parent path is a file", async () => {
             await file_ops.writeFile("/foo", "content");
             try {
-                await dir_ops.mkdir("/foo/bar/", { recursive: true });
+                await dir_ops.mkdir("/foo/bar/", {recursive: true});
                 assert.fail("Expected error");
             } catch (err) {
                 assertFSError(err, 'ENOTDIR');
@@ -142,7 +140,7 @@ describe("mkdir", () => {
         });
 
         it("should succeed silently for root path with recursive", async () => {
-            await dir_ops.mkdir("/", { recursive: true });
+            await dir_ops.mkdir("/", {recursive: true});
             const entries = await dir_ops.readdir("/");
             assert.deepEqual(entries, []);
         });
@@ -178,7 +176,7 @@ describe("readdir", () => {
 
     context("reading directory contents", () => {
         it("should return empty array for empty directory", async () => {
-            await dir_ops.mkdir("/empty/", { recursive: true });
+            await dir_ops.mkdir("/empty/", {recursive: true});
             const entries = await dir_ops.readdir("/empty/");
             assert.deepEqual(entries, []);
         });
@@ -192,15 +190,15 @@ describe("readdir", () => {
         });
 
         it("should return subdirectory names without trailing slash", async () => {
-            await dir_ops.mkdir("/foo/", { recursive: true });
-            await dir_ops.mkdir("/bar/", { recursive: true });
+            await dir_ops.mkdir("/foo/", {recursive: true});
+            await dir_ops.mkdir("/bar/", {recursive: true});
 
             const entries = await dir_ops.readdir("/");
             assert.sameMembers(entries, ["foo", "bar"]);
         });
 
         it("should return mixed files and directories", async () => {
-            await dir_ops.mkdir("/subdir/", { recursive: true });
+            await dir_ops.mkdir("/subdir/", {recursive: true});
             await file_ops.writeFile("/file.txt", "content");
 
             const entries = await dir_ops.readdir("/");
@@ -208,7 +206,7 @@ describe("readdir", () => {
         });
 
         it("should only return direct children", async () => {
-            await dir_ops.mkdir("/foo/bar/baz/", { recursive: true });
+            await dir_ops.mkdir("/foo/bar/baz/", {recursive: true});
             await file_ops.writeFile("/foo/file.txt", "content");
             await file_ops.writeFile("/foo/bar/nested.txt", "nested");
 
@@ -217,7 +215,7 @@ describe("readdir", () => {
         });
 
         it("should read nested directory contents", async () => {
-            await dir_ops.mkdir("/a/b/", { recursive: true });
+            await dir_ops.mkdir("/a/b/", {recursive: true});
             await file_ops.writeFile("/a/b/file1.txt", "1");
             await file_ops.writeFile("/a/b/file2.txt", "2");
 
@@ -230,7 +228,7 @@ describe("readdir", () => {
         it("should return Dirent objects for files", async () => {
             await file_ops.writeFile("/test.txt", "content");
 
-            const entries = await dir_ops.readdir("/", { withFileTypes: true });
+            const entries = await dir_ops.readdir("/", {withFileTypes: true});
             assert.lengthOf(entries, 1);
 
             const entry = entries[0]!;
@@ -240,9 +238,9 @@ describe("readdir", () => {
         });
 
         it("should return Dirent objects for directories", async () => {
-            await dir_ops.mkdir("/subdir/", { recursive: true });
+            await dir_ops.mkdir("/subdir/", {recursive: true});
 
-            const entries = await dir_ops.readdir("/", { withFileTypes: true });
+            const entries = await dir_ops.readdir("/", {withFileTypes: true});
             assert.lengthOf(entries, 1);
 
             const entry = entries[0]!;
@@ -252,10 +250,10 @@ describe("readdir", () => {
         });
 
         it("should return mixed Dirent objects", async () => {
-            await dir_ops.mkdir("/subdir/", { recursive: true });
+            await dir_ops.mkdir("/subdir/", {recursive: true});
             await file_ops.writeFile("/file.txt", "content");
 
-            const entries = await dir_ops.readdir("/", { withFileTypes: true });
+            const entries = await dir_ops.readdir("/", {withFileTypes: true});
             assert.lengthOf(entries, 2);
 
             const file_entry = entries.find((e) => e.name === "file.txt")!;
@@ -269,8 +267,8 @@ describe("readdir", () => {
         });
 
         it("should return empty array for empty directory", async () => {
-            await dir_ops.mkdir("/empty/", { recursive: true });
-            const entries = await dir_ops.readdir("/empty/", { withFileTypes: true });
+            await dir_ops.mkdir("/empty/", {recursive: true});
+            const entries = await dir_ops.readdir("/empty/", {withFileTypes: true});
             assert.deepEqual(entries, []);
         });
     });
@@ -283,7 +281,7 @@ describe("readdir", () => {
 
         it("should list root directory contents", async () => {
             await file_ops.writeFile("/root-file.txt", "content");
-            await dir_ops.mkdir("/root-dir/", { recursive: true });
+            await dir_ops.mkdir("/root-dir/", {recursive: true});
 
             const entries = await dir_ops.readdir("/");
             assert.sameMembers(entries, ["root-file.txt", "root-dir"]);
@@ -291,9 +289,9 @@ describe("readdir", () => {
 
         it("should read root with withFileTypes", async () => {
             await file_ops.writeFile("/file.txt", "content");
-            await dir_ops.mkdir("/dir/", { recursive: true });
+            await dir_ops.mkdir("/dir/", {recursive: true});
 
-            const entries = await dir_ops.readdir("/", { withFileTypes: true });
+            const entries = await dir_ops.readdir("/", {withFileTypes: true});
             assert.lengthOf(entries, 2);
 
             const file_entry = entries.find((e) => e.name === "file.txt")!;
@@ -315,7 +313,7 @@ describe("readdir", () => {
         });
 
         it("should throw ENOENT for non-existent nested directory", async () => {
-            await dir_ops.mkdir("/foo/", { recursive: true });
+            await dir_ops.mkdir("/foo/", {recursive: true});
             try {
                 await dir_ops.readdir("/foo/bar/");
                 assert.fail("Expected error");

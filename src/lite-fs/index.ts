@@ -1,11 +1,11 @@
-import type { Dirent, FileSystemAPI, FSBuffer, MkdirOptions, RmOptions, Stats, WatchEvent, WatchOptions } from "../api/index.ts";
-import { createFSCore, type FSCore } from "./core/index.ts";
-import { createDirOps, type DirOps } from "./dir-ops.ts";
-import { createFileOps, type FileOps } from "./file-ops.ts";
-import { createRemoveOps, type RemoveOps } from "./remove-ops.ts";
-import { createRenameOps, type RenameOps } from "./rename-ops.ts";
-import { createStatOps, type StatOps } from "./stat-ops.ts";
-import { createWatchOps, type WatchOps } from "./watch-ops.ts";
+import type {Dirent, FileSystemAPI, FSBuffer, MkdirOptions, RmOptions, Stats, WatchEvent, WatchOptions} from "../api/index.ts";
+import {createFSCore, type FSCore} from "./core/index.ts";
+import {createDirOps, type DirOps} from "./dir-ops.ts";
+import {createFileOps, type FileOps} from "./file-ops.ts";
+import {createRemoveOps, type RemoveOps} from "./remove-ops.ts";
+import {createRenameOps, type RenameOps} from "./rename-ops.ts";
+import {createStatOps, type StatOps} from "./stat-ops.ts";
+import {createWatchOps, type WatchOps} from "./watch-ops.ts";
 
 export class LiteFS implements FileSystemAPI {
     readonly #core: FSCore;
@@ -14,7 +14,7 @@ export class LiteFS implements FileSystemAPI {
     readonly #dir_ops: DirOps;
     readonly #remove_ops: RemoveOps;
     readonly #rename_ops: RenameOps;
-    readonly #stat_ops: StatOps
+    readonly #stat_ops: StatOps;
     readonly #watch_ops: WatchOps;
 
     constructor(db_name: string = 'lite-fs') {
@@ -43,10 +43,10 @@ export class LiteFS implements FileSystemAPI {
     mkdir(path: string, options?: MkdirOptions): Promise<void> {
         return this.#dir_ops.mkdir(path, options);
     }
-    
+
     readdir(path: string): Promise<string[]>;
-    readdir(path: string, options: { withFileTypes: true }): Promise<Dirent[]>;
-    readdir(path: string, options?: { withFileTypes: true }): Promise<string[] | Dirent[]> {
+    readdir(path: string, options: {withFileTypes: true}): Promise<Dirent[]>;
+    readdir(path: string, options?: {withFileTypes: true}): Promise<string[] | Dirent[]> {
         if(options) return this.#dir_ops.readdir(path, options);
         else return this.#dir_ops.readdir(path);
     }

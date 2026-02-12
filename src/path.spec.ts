@@ -1,4 +1,4 @@
-import { assert } from 'chai';
+import {assert} from 'chai';
 import {
     isAbsolutePath,
     isFolderPath,
@@ -8,7 +8,7 @@ import {
     joinPath,
 } from './path.ts';
 
-import { assertFSError } from './error.ts';
+import {assertFSError} from './error.ts';
 
 describe("isAbsolutePath", () => {
     context("when path starts with /", () => {

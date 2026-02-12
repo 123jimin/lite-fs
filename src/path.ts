@@ -1,6 +1,6 @@
-import { FSError } from "./error.ts";
+import {FSError} from "./error.ts";
 
-/**A path that represents a folder (ends with `/`). */
+/** A path that represents a folder (ends with `/`). */
 export type FolderPath = `${string}/`;
 
 /** An absolute path to a folder (starts and ends with `/`). */
@@ -58,7 +58,7 @@ export function validatePath(path: string): AbsolutePath;
 export function validatePath(path: string, type: "folder"): AbsoluteFolderPath;
 export function validatePath(path: string, type: "file"): AbsoluteFilePath;
 export function validatePath(path: string, type?: "folder" | "file"): AbsolutePath {
-    if (!path.startsWith("/")) {
+    if(!path.startsWith("/")) {
         throw FSError.EINVAL(path, "validatePath");
     }
 
@@ -77,19 +77,18 @@ export function validatePath(path: string, type?: "folder" | "file"): AbsolutePa
     }
 
     const segments = path.split("/");
-    for (let i = 1; i < segments.length; i++) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    for(let i = 1; i < segments.length; i++) {
         const segment = segments[i]!;
         const is_last_segment = i === segments.length - 1;
 
-        if (segment === "") {
-            if (!is_last_segment) {
+        if(segment === "") {
+            if(!is_last_segment) {
                 throw FSError.EINVAL(path, "validatePath");
             }
             continue;
         }
 
-        if (segment === "." || segment === "..") {
+        if(segment === "." || segment === "..") {
             throw FSError.EINVAL(path, "validatePath");
         }
     }
@@ -110,14 +109,14 @@ export function validatePath(path: string, type?: "folder" | "file"): AbsolutePa
  * getParentPath("/");             // "/"
  */
 export function getParentPath(path: string): AbsoluteFolderPath {
-    if (path === "/" || !path.startsWith("/")) {
+    if(path === "/" || !path.startsWith("/")) {
         return "/";
     }
 
     const normalized = path.endsWith("/") ? path.slice(0, -1) : path;
     const last_slash_ind = normalized.lastIndexOf("/");
 
-    if (last_slash_ind <= 0) {
+    if(last_slash_ind <= 0) {
         return "/";
     }
 
@@ -137,7 +136,7 @@ export function getParentPath(path: string): AbsoluteFolderPath {
  * getBaseName("/");             // ""
  */
 export function getBaseName(path: string): string {
-    if (path === "/") {
+    if(path === "/") {
         return "";
     }
 
@@ -178,23 +177,22 @@ export function getBaseName(path: string): string {
  * joinPath("/home", "/../../../etc");        // "/home/etc"
  */
 export function joinPath(base: string, ...paths: string[]): AbsolutePath {
-    if (!base.startsWith("/")) {
+    if(!base.startsWith("/")) {
         base = `/${base}`;
     }
 
-    if (!base.endsWith("/")) {
+    if(!base.endsWith("/")) {
         base = `${base}/`;
     }
 
     const folders: string[] = [];
     let file_name: string | null = null;
 
-    for (let path_ind = 0; path_ind < paths.length; path_ind++) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    for(let path_ind = 0; path_ind < paths.length; path_ind++) {
         let path = paths[path_ind]!;
 
         // Absolute path resets to base
-        if (path.startsWith("/")) {
+        if(path.startsWith("/")) {
             folders.length = 0;
             file_name = null;
             path = path.slice(1);
@@ -204,19 +202,18 @@ export function joinPath(base: string, ...paths: string[]): AbsolutePath {
         const is_last_path = path_ind === paths.length - 1;
         const ends_with_slash = path.endsWith("/");
 
-        for (let seg_ind = 0; seg_ind < segments.length; seg_ind++) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        for(let seg_ind = 0; seg_ind < segments.length; seg_ind++) {
             const segment = segments[seg_ind]!;
             const is_last_segment = seg_ind === segments.length - 1;
 
             // Skip empty segments and current-directory markers
-            if (segment === "" || segment === ".") {
+            if(segment === "" || segment === ".") {
                 continue;
             }
 
             // Handle parent directory navigation
-            if (segment === "..") {
-                if (folders.length > 0) {
+            if(segment === "..") {
+                if(folders.length > 0) {
                     folders.pop();
                 }
                 file_name = null;
@@ -226,7 +223,7 @@ export function joinPath(base: string, ...paths: string[]): AbsolutePath {
             // Determine if this segment represents a file or folder
             const is_file = is_last_path && is_last_segment && !ends_with_slash;
 
-            if (is_file) {
+            if(is_file) {
                 file_name = segment;
             } else {
                 folders.push(segment);

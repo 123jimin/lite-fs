@@ -1,4 +1,4 @@
-import type { AbsoluteFolderPath } from "../path.ts";
+import type {AbsoluteFolderPath} from "../path.ts";
 
 export interface Dirent {
     isFile(): boolean;
@@ -16,5 +16,5 @@ export interface MkdirOptions {
 export interface DirOps {
     mkdir(path: string, options?: MkdirOptions): Promise<void>;
     readdir(path: string): Promise<string[]>;
-    readdir(path: string, options: { withFileTypes: true }): Promise<Dirent[]>;
+    readdir(path: string, options: {withFileTypes: true}): Promise<Dirent[]>;
 }

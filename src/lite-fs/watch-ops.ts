@@ -1,8 +1,8 @@
-export type { WatchOps } from "../api/watch-ops.ts";
-import type { WatchEvent, WatchOps, WatchOptions } from "../api/watch-ops.ts";
-import { getParentPath, isFolderPath, validatePath } from "../path.ts";
+export type {WatchOps} from "../api/watch-ops.ts";
+import type {WatchEvent, WatchOps, WatchOptions} from "../api/watch-ops.ts";
+import {getParentPath, isFolderPath, validatePath} from "../path.ts";
 
-import type { FSCore } from "./core/index.ts";
+import type {FSCore} from "./core/index.ts";
 
 export function createWatchOps(core: FSCore): WatchOps {
     return {
@@ -65,10 +65,9 @@ export function createWatchOps(core: FSCore): WatchOps {
                     }
 
                     if(queue.length > 0) {
-                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                         return Promise.resolve({value: queue.shift()!, done: false});
                     }
-                    
+
                     return new Promise((resolve) => {
                         resolveNext = resolve;
                     });
@@ -80,7 +79,7 @@ export function createWatchOps(core: FSCore): WatchOps {
                 throw(e?: unknown): Promise<IteratorResult<WatchEvent>> {
                     cleanup();
                     return Promise.reject(e);
-                }
+                },
             };
         },
     };

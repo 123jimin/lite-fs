@@ -1,12 +1,12 @@
-import type { IDBPDatabase } from "idb";
+import type {IDBPDatabase} from "idb";
 
-import type { FSBuffer } from "../../api/index.ts";
+import type {FSBuffer} from "../../api/index.ts";
 
-import { FSError } from "../../error.ts";
-import type { AbsoluteFilePath, AbsoluteFolderPath, AbsolutePath } from "../../path.ts";
-import { getParentPath } from "../../path.ts";
-import { STORE_NAME } from "./const.ts";
-import { toStoragePath, type StoragePath } from "./path.ts";
+import {FSError} from "../../error.ts";
+import type {AbsoluteFilePath, AbsoluteFolderPath, AbsolutePath} from "../../path.ts";
+import {getParentPath} from "../../path.ts";
+import {STORE_NAME} from "./const.ts";
+import {toStoragePath, type StoragePath} from "./path.ts";
 
 export type DBTimeStamp = number;
 
@@ -64,11 +64,11 @@ export async function ensureParentDirs(db: IDBPDatabase, path: AbsolutePath): Pr
 
     const created: AbsoluteFolderPath[] = [];
     let curr_path: AbsoluteFolderPath = '/';
-    for (const segment of segments) {
+    for(const segment of segments) {
         curr_path = (curr_path + segment + '/') as AbsoluteFolderPath;
-        
+
         const folder_entry = await getEntryByPath(db, curr_path);
-        if (folder_entry == null) {
+        if(folder_entry == null) {
             const new_entry: DBFolderEntry = createDBFolderEntry(curr_path);
 
             await putEntryByPath(db, curr_path, new_entry);

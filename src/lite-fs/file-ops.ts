@@ -1,11 +1,11 @@
-export type { FileOps } from "../api/file-ops.ts";
-import type { FileOps } from "../api/file-ops.ts";
+export type {FileOps} from "../api/file-ops.ts";
+import type {FileOps} from "../api/file-ops.ts";
 
-import { validatePath } from "../path.ts";
-import { FSError } from "../error.ts";
-import type { FSBuffer } from "../api/index.ts";
+import {validatePath} from "../path.ts";
+import {FSError} from "../error.ts";
+import type {FSBuffer} from "../api/index.ts";
 
-import { createDBFileEntry, ensureParentDirs, getEntryByPath, putEntryByPath, type FSCore } from "./core/index.ts";
+import {createDBFileEntry, ensureParentDirs, getEntryByPath, putEntryByPath, type FSCore} from "./core/index.ts";
 
 export function createFileOps(core: FSCore): FileOps {
     async function readFile(path: string): Promise<FSBuffer>;
@@ -16,10 +16,10 @@ export function createFileOps(core: FSCore): FileOps {
         const db = await core.getDB();
         const entry = await getEntryByPath(db, path);
 
-        if (!entry) {
+        if(!entry) {
             throw FSError.ENOENT(path, 'read');
         }
-        if (entry.type !== 'file') {
+        if(entry.type !== 'file') {
             throw FSError.EISDIR(path, 'read');
         }
 
@@ -34,7 +34,7 @@ export function createFileOps(core: FSCore): FileOps {
 
         const db = await core.getDB();
         const created_dirs = await ensureParentDirs(db, path);
-        for (const dir of created_dirs) {
+        for(const dir of created_dirs) {
             core.emit({eventType: 'rename', filename: dir});
         }
 
@@ -54,5 +54,5 @@ export function createFileOps(core: FSCore): FileOps {
         });
     }
 
-    return { readFile, writeFile };
+    return {readFile, writeFile};
 }

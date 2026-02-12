@@ -1,12 +1,12 @@
 import "fake-indexeddb/auto";
-import { assert } from "chai";
-import { createFSCore, type FSCore } from "./core/index.ts";
-import { createDirOps, type DirOps } from "./dir-ops.ts";
-import { createFileOps, type FileOps } from "./file-ops.ts";
-import { createRemoveOps, type RemoveOps } from "./remove-ops.ts";
-import { createRenameOps, type RenameOps } from "./rename-ops.ts";
-import { createWatchOps, type WatchOps } from "./watch-ops.ts";
-import type { WatchEvent } from "../api/watch-ops.ts";
+import {assert} from "chai";
+import {createFSCore, type FSCore} from "./core/index.ts";
+import {createDirOps, type DirOps} from "./dir-ops.ts";
+import {createFileOps, type FileOps} from "./file-ops.ts";
+import {createRemoveOps, type RemoveOps} from "./remove-ops.ts";
+import {createRenameOps, type RenameOps} from "./rename-ops.ts";
+import {createWatchOps, type WatchOps} from "./watch-ops.ts";
+import type {WatchEvent} from "../api/watch-ops.ts";
 
 describe("watch", () => {
     let core: FSCore;
@@ -77,7 +77,7 @@ describe("watch", () => {
 
             const watcher = watch_ops.watch("/foo/");
 
-            await dir_ops.mkdir("/foo/bar/baz/", { recursive: true });
+            await dir_ops.mkdir("/foo/bar/baz/", {recursive: true});
 
             const result = await watcher.next();
             assert.isFalse(result.done);
@@ -88,7 +88,7 @@ describe("watch", () => {
         });
 
         it("should not emit events for nested descendants", async () => {
-            await dir_ops.mkdir("/parent/child/", { recursive: true });
+            await dir_ops.mkdir("/parent/child/", {recursive: true});
 
             const watcher = watch_ops.watch("/parent/");
 
@@ -178,12 +178,12 @@ describe("watch", () => {
         });
 
         it("should emit single 'rename' for recursive rm", async () => {
-            await dir_ops.mkdir("/parent/child/", { recursive: true });
+            await dir_ops.mkdir("/parent/child/", {recursive: true});
             await file_ops.writeFile("/parent/child/file.txt", "content");
 
             const watcher = watch_ops.watch("/");
 
-            await remove_ops.rm("/parent/", { recursive: true });
+            await remove_ops.rm("/parent/", {recursive: true});
 
             const result = await watcher.next();
             assert.equal(result.value.eventType, "rename");
@@ -216,7 +216,7 @@ describe("watch", () => {
     context("abort signal", () => {
         it("should stop iteration when signal is aborted", async () => {
             const controller = new AbortController();
-            const watcher = watch_ops.watch("/", { signal: controller.signal });
+            const watcher = watch_ops.watch("/", {signal: controller.signal});
 
             controller.abort();
 
@@ -228,7 +228,7 @@ describe("watch", () => {
             const controller = new AbortController();
             controller.abort();
 
-            const watcher = watch_ops.watch("/", { signal: controller.signal });
+            const watcher = watch_ops.watch("/", {signal: controller.signal});
 
             const result = await watcher.next();
             assert.isTrue(result.done);
@@ -236,7 +236,7 @@ describe("watch", () => {
 
         it("should abort pending next() call when signal is aborted", async () => {
             const controller = new AbortController();
-            const watcher = watch_ops.watch("/", { signal: controller.signal });
+            const watcher = watch_ops.watch("/", {signal: controller.signal});
 
             const next_promise = watcher.next();
             controller.abort();
@@ -277,15 +277,15 @@ describe("watch", () => {
             await dir_ops.mkdir("/c/");
 
             const results: WatchEvent[] = [];
-            for (let i = 0; i < 3; i++) {
+            for(let i = 0; i < 3; i++) {
                 const r = await watcher.next();
-                if (!r.done) results.push(r.value);
+                if(!r.done) results.push(r.value);
             }
 
             assert.lengthOf(results, 3);
             assert.sameMembers(
                 results.map((e) => e.filename),
-                ["/a.txt", "/b.txt", "/c/"]
+                ["/a.txt", "/b.txt", "/c/"],
             );
 
             await watcher.return?.();

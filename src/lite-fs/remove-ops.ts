@@ -1,9 +1,9 @@
-export type { RemoveOps } from "../api/remove-ops.ts";
-import type { RemoveOps, RmOptions } from "../api/remove-ops.ts";
+export type {RemoveOps} from "../api/remove-ops.ts";
+import type {RemoveOps, RmOptions} from "../api/remove-ops.ts";
 
-import { FSError } from "../error.ts";
-import { isFolderPath, validatePath } from "../path.ts";
-import { STORE_NAME, toStoragePath, type FSCore, type DBEntry, INDEX_BY_PARENT, type StoragePath } from "./core/index.ts";
+import {FSError} from "../error.ts";
+import {isFolderPath, validatePath} from "../path.ts";
+import {STORE_NAME, toStoragePath, type FSCore, type DBEntry, INDEX_BY_PARENT, type StoragePath} from "./core/index.ts";
 
 export function createRemoveOps(core: FSCore): RemoveOps {
     return {
@@ -17,12 +17,12 @@ export function createRemoveOps(core: FSCore): RemoveOps {
 
             const entry = (await tx.store.get(key)) as DBEntry | undefined;
 
-            if (entry == null) {
+            if(entry == null) {
                 tx.abort();
                 throw FSError.ENOENT(path, "unlink");
             }
 
-            if (entry.type !== "file") {
+            if(entry.type !== "file") {
                 tx.abort();
                 throw FSError.EISDIR(path, "unlink");
             }
@@ -35,7 +35,7 @@ export function createRemoveOps(core: FSCore): RemoveOps {
         async rm(in_path: string, options?: RmOptions): Promise<void> {
             const path = validatePath(in_path);
 
-            if (path === "/") {
+            if(path === "/") {
                 throw FSError.EINVAL(path, "rm");
             }
 
@@ -48,8 +48,8 @@ export function createRemoveOps(core: FSCore): RemoveOps {
 
                 const entry = (await tx.store.get(file_key)) as DBEntry | undefined;
 
-                if (entry == null) {
-                    if (options?.force) {
+                if(entry == null) {
+                    if(options?.force) {
                         await tx.done;
                         return;
                     }
@@ -58,18 +58,18 @@ export function createRemoveOps(core: FSCore): RemoveOps {
                     throw FSError.ENOENT(path, "rm");
                 }
 
-                if (entry.type !== "file") {
+                if(entry.type !== "file") {
                     tx.abort();
                     throw FSError.EISDIR(path, "rm");
                 }
 
                 await tx.store.delete(file_key);
                 await tx.done;
-                
+
                 core.emit({eventType: 'rename', filename: path});
                 return;
             }
-            
+
             const dir_key = toStoragePath(path);
 
             const tx = db.transaction(STORE_NAME, "readwrite");
@@ -77,8 +77,8 @@ export function createRemoveOps(core: FSCore): RemoveOps {
 
             const entry = (await tx.store.get(dir_key)) as DBEntry | undefined;
 
-            if (entry == null) {
-                if (options?.force) {
+            if(entry == null) {
+                if(options?.force) {
                     await tx.done;
                     return;
                 }
@@ -86,14 +86,14 @@ export function createRemoveOps(core: FSCore): RemoveOps {
                 throw FSError.ENOENT(path, "rm");
             }
 
-            if (entry.type !== "folder") {
+            if(entry.type !== "folder") {
                 tx.abort();
                 throw FSError.ENOTDIR(path, "rm");
             }
 
-            if (!options?.recursive) {
+            if(!options?.recursive) {
                 const first_child = await index.openCursor(dir_key);
-                if (first_child) {
+                if(first_child) {
                     tx.abort();
                     throw FSError.ENOTEMPTY(path, "rm");
                 }
@@ -108,17 +108,16 @@ export function createRemoveOps(core: FSCore): RemoveOps {
             const stack: StoragePath[] = [dir_key];
             const keys_to_delete: string[] = [dir_key];
 
-            while (stack.length > 0) {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            while(stack.length > 0) {
                 const parent = stack.pop()!;
 
                 let cursor = await index.openCursor(parent);
-                while (cursor) {
+                while(cursor) {
                     const key = cursor.primaryKey as string;
                     const child = cursor.value as DBEntry;
 
                     keys_to_delete.push(key);
-                    if (child.type === "folder") {
+                    if(child.type === "folder") {
                         stack.push(key as StoragePath);
                     }
 
@@ -131,10 +130,10 @@ export function createRemoveOps(core: FSCore): RemoveOps {
             }
 
             await tx.done;
-            
+
             // Emit watch event for top-level path only.
             core.emit({eventType: 'rename', filename: path});
             return;
-        }
+        },
     };
 }

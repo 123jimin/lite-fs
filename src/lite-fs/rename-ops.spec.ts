@@ -1,12 +1,12 @@
 import "fake-indexeddb/auto";
-import { assert } from "chai";
+import {assert} from "chai";
 
-import { createFSCore, type FSCore } from "./core/index.ts";
-import { createDirOps, type DirOps } from "./dir-ops.ts";
-import { createFileOps, type FileOps } from "./file-ops.ts";
-import { createRenameOps, type RenameOps } from "./rename-ops.ts";
-import { createStatOps, type StatOps } from "./stat-ops.ts";
-import { assertFSError } from "../error.ts";
+import {createFSCore, type FSCore} from "./core/index.ts";
+import {createDirOps, type DirOps} from "./dir-ops.ts";
+import {createFileOps, type FileOps} from "./file-ops.ts";
+import {createRenameOps, type RenameOps} from "./rename-ops.ts";
+import {createStatOps, type StatOps} from "./stat-ops.ts";
+import {assertFSError} from "../error.ts";
 
 describe("rename", () => {
     let core: FSCore;
@@ -95,15 +95,15 @@ describe("rename", () => {
         it("should overwrite destination file if destination file already exists", async () => {
             await file_ops.writeFile("/from.txt", "from");
             await file_ops.writeFile("/to.txt", "to");
-            
+
             await rename_ops.rename("/from.txt", "/to.txt");
 
             assert.equal(await file_ops.readFile("/to.txt", "utf-8"), "from");
-            
+
             try {
                 await file_ops.readFile("/from.txt", "utf-8");
                 assert.fail("Expected ENOENT");
-            } catch(e) {
+            } catch (e) {
                 assertFSError(e, 'ENOENT');
             }
         });
@@ -161,7 +161,7 @@ describe("rename", () => {
         });
 
         it("should rename a directory and move all nested contents", async () => {
-            await dir_ops.mkdir("/parent/child/grandchild/", { recursive: true });
+            await dir_ops.mkdir("/parent/child/grandchild/", {recursive: true});
             await file_ops.writeFile("/parent/child/grandchild/toy.txt", "broken");
 
             await rename_ops.rename("/parent/", "/moved/");
@@ -198,7 +198,7 @@ describe("rename", () => {
         });
 
         it("should throw EINVAL when attempting to move a directory inside itself", async () => {
-            await dir_ops.mkdir("/a/b/", { recursive: true });
+            await dir_ops.mkdir("/a/b/", {recursive: true});
 
             try {
                 await rename_ops.rename("/a/", "/a/b/c/");
@@ -209,4 +209,3 @@ describe("rename", () => {
         });
     });
 });
-

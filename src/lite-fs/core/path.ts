@@ -1,4 +1,4 @@
-import type { AbsoluteFolderPath, AbsolutePath } from "../../path.ts";
+import type {AbsoluteFolderPath, AbsolutePath} from "../../path.ts";
 
 /** Folders are stored without a trailing `/`. */
 export type StoragePath = '/' | `/${string}`;

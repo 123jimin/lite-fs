@@ -1,9 +1,9 @@
 import "fake-indexeddb/auto";
-import { assert } from "chai";
-import { createFSCore, type FSCore } from "./core/index.ts";
-import { createDirOps, type DirOps } from "./dir-ops.ts";
-import { createFileOps, type FileOps } from "./file-ops.ts";
-import { assertFSError } from "../error.ts";
+import {assert} from "chai";
+import {createFSCore, type FSCore} from "./core/index.ts";
+import {createDirOps, type DirOps} from "./dir-ops.ts";
+import {createFileOps, type FileOps} from "./file-ops.ts";
+import {assertFSError} from "../error.ts";
 
 describe("writeFile", () => {
     let core: FSCore;
@@ -216,7 +216,7 @@ describe("readFile", () => {
         });
 
         it("should throw ENOENT for non-existent nested file", async () => {
-            await dir_ops.mkdir("/foo/", { recursive: true });
+            await dir_ops.mkdir("/foo/", {recursive: true});
             try {
                 await file_ops.readFile("/foo/nonexistent.txt");
                 assert.fail("Expected error");
@@ -235,7 +235,7 @@ describe("readFile", () => {
         });
 
         it("should throw EISDIR when trying to read a directory", async () => {
-            await dir_ops.mkdir("/mydir/", { recursive: true });
+            await dir_ops.mkdir("/mydir/", {recursive: true});
             try {
                 await file_ops.readFile("/mydir");
                 assert.fail("Expected error");

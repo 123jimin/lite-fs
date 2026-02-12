@@ -1,4 +1,4 @@
-import type { AbsolutePath } from "../path.ts";
+import type {AbsolutePath} from "../path.ts";
 
 export interface RenameWatchEvent {
     eventType: 'rename';

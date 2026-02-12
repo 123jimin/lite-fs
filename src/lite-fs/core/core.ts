@@ -1,7 +1,7 @@
-import { deleteDB, openDB, type IDBPDatabase } from "idb";
-import { INDEX_BY_PARENT, STORE_NAME } from "./const.ts";
-import type { DBEntry } from "./db-entry.ts";
-import type { FSBuffer, WatchEvent } from "../../api/index.ts";
+import {deleteDB, openDB, type IDBPDatabase} from "idb";
+import {INDEX_BY_PARENT, STORE_NAME} from "./const.ts";
+import type {DBEntry} from "./db-entry.ts";
+import type {FSBuffer, WatchEvent} from "../../api/index.ts";
 
 export type WatchCallback = (event: WatchEvent) => void;
 
@@ -19,11 +19,11 @@ export function createFSCore(db_name: string): FSCore {
     const subscribers = new Set<WatchCallback>();
 
     const getDB = (): Promise<IDBPDatabase> => {
-        if (!db_promise) {
+        if(!db_promise) {
             db_promise = openDB(db_name, 1, {
                 upgrade(db) {
                     const store = db.createObjectStore(STORE_NAME);
-                    store.createIndex(INDEX_BY_PARENT, 'parent', { unique: false });
+                    store.createIndex(INDEX_BY_PARENT, 'parent', {unique: false});
                 },
             });
         }
@@ -38,7 +38,7 @@ export function createFSCore(db_name: string): FSCore {
             const store = tx.objectStore(STORE_NAME);
 
             const out: Array<[path: string, content: FSBuffer]> = [];
-            for (let cursor = await store.openCursor(); cursor; cursor = await cursor.continue()) {
+            for(let cursor = await store.openCursor(); cursor; cursor = await cursor.continue()) {
                 const key = cursor.key.toString();
                 const value = cursor.value as DBEntry;
                 if(value.type !== 'file') continue;
@@ -60,7 +60,7 @@ export function createFSCore(db_name: string): FSCore {
             for(const callback of subscribers) {
                 try {
                     callback(event);
-                } catch {
+                } catch{
                     /* do nothing */
                 }
             }
@@ -70,6 +70,6 @@ export function createFSCore(db_name: string): FSCore {
             return () => {
                 subscribers.delete(callback);
             };
-        }
+        },
     };
 }

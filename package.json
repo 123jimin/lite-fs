@@ -13,13 +13,13 @@
     "!dist/**/*.spec.*"
   ],
   "scripts": {
-    "clean": "npx rimraf dist tsconfig.tsbuildinfo",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
     "prepare": "pnpm build",
-    "build": "npx tsc",
-    "build:watch": "npx tsc --watch",
-    "lint": "npx eslint src/",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "lint": "eslint src/",
     "pretest": "pnpm build",
-    "test": "npx mocha \"dist/**/*.spec.js\""
+    "test": "mocha \"dist/**/*.spec.js\""
   },
   "keywords": [],
   "author": "Jimin Park",

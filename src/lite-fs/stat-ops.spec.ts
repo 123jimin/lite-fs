@@ -1,10 +1,10 @@
 import "fake-indexeddb/auto";
-import { assert } from "chai";
-import { createFSCore, type FSCore } from "./core/index.ts";
-import { createDirOps, type DirOps } from "./dir-ops.ts";
-import { createFileOps, type FileOps } from "./file-ops.ts";
-import { createStatOps, type StatOps } from "./stat-ops.ts";
-import { assertFSError } from "../error.ts";
+import {assert} from "chai";
+import {createFSCore, type FSCore} from "./core/index.ts";
+import {createDirOps, type DirOps} from "./dir-ops.ts";
+import {createFileOps, type FileOps} from "./file-ops.ts";
+import {createStatOps, type StatOps} from "./stat-ops.ts";
+import {assertFSError} from "../error.ts";
 
 describe("stat", () => {
     let core: FSCore;
@@ -35,7 +35,7 @@ describe("stat", () => {
         });
 
         it("should return Stats for a file in nested directory", async () => {
-            await dir_ops.mkdir("/foo/bar/", { recursive: true });
+            await dir_ops.mkdir("/foo/bar/", {recursive: true});
             await file_ops.writeFile("/foo/bar/file.txt", "content");
 
             const stats = await stat_ops.stat("/foo/bar/file.txt");
@@ -63,7 +63,7 @@ describe("stat", () => {
         });
 
         it("should return Stats for a nested directory", async () => {
-            await dir_ops.mkdir("/foo/bar/baz/", { recursive: true });
+            await dir_ops.mkdir("/foo/bar/baz/", {recursive: true});
 
             const stats = await stat_ops.stat("/foo/bar/baz/");
 
@@ -72,7 +72,7 @@ describe("stat", () => {
         });
 
         it("should return Stats for intermediate directories", async () => {
-            await dir_ops.mkdir("/a/b/c/", { recursive: true });
+            await dir_ops.mkdir("/a/b/c/", {recursive: true});
 
             const stats_a = await stat_ops.stat("/a/");
             const stats_b = await stat_ops.stat("/a/b/");
