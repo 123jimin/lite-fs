@@ -35,6 +35,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@jiminp/eslint-config": "^1.1.0",
+    "@stylistic/eslint-plugin": "^5.8.0",
     "@types/chai": "^5.2.3",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.2.3",

@@ -1,17 +1,5 @@
 // @ts-check
 
-import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
+import config from "@jiminp/eslint-config";
 
-const config = tseslint.config([
-    {
-        ignores: ["dist/**"],
-    },
-    eslint.configs.recommended,
-    tseslint.configs.strict,
-    {
-        files: ["src/**/*.{ts}"],
-    },
-]);
-
-export default config;
+export default [...config];
