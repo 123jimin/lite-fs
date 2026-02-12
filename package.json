@@ -27,7 +27,14 @@
     "pretest": "pnpm build",
     "test": "mocha \"dist/**/*.spec.js\""
   },
-  "keywords": [],
+  "keywords": [
+    "filesystem",
+    "fs",
+    "indexeddb",
+    "storage",
+    "browser",
+    "virtual-filesystem"
+  ],
   "author": "Jimin Park",
   "license": "MIT",
   "repository": {
