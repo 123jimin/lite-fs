@@ -1,6 +1,6 @@
 {
   "name": "@jiminp/lite-fs",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A simple fs-like API wrapper of IndexedDB for light application usage.",
   "type": "module",
   "engines": {
@@ -8,6 +8,12 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "files": [
     "dist",
     "!dist/**/*.spec.*"
