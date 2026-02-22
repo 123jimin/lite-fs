@@ -1,11 +1,8 @@
-import type {IDBPDatabase} from "idb";
-
 import type {FSBuffer} from "../../api/index.ts";
 
 import {FSError} from "../../error.ts";
 import type {AbsoluteFilePath, AbsoluteFolderPath, AbsolutePath} from "../../path.ts";
 import {getParentPath} from "../../path.ts";
-import {STORE_NAME} from "./const.ts";
 import {toStoragePath, type StoragePath} from "./path.ts";
 
 export type DBTimeStamp = number;
@@ -46,19 +43,29 @@ export function createDBFolderEntry(path: AbsoluteFolderPath): DBFolderEntry {
 
 export type DBEntry = DBFileEntry | DBFolderEntry;
 
-export async function getEntryByPath(db: IDBPDatabase, path: AbsoluteFolderPath): Promise<DBFolderEntry|null>;
-export async function getEntryByPath(db: IDBPDatabase, path: AbsoluteFilePath): Promise<DBFileEntry|null>;
-export async function getEntryByPath(db: IDBPDatabase, path: AbsolutePath): Promise<DBEntry|null> {
-    return (await db.get(STORE_NAME, toStoragePath(path))) ?? null;
+/** Object store handle for reading entries. */
+export interface EntryStoreReadable {
+    get(query: StoragePath): Promise<DBEntry | undefined>;
 }
 
-export async function putEntryByPath(db: IDBPDatabase, path: AbsoluteFolderPath, entry: DBFolderEntry): Promise<void>;
-export async function putEntryByPath(db: IDBPDatabase, path: AbsoluteFilePath, entry: DBFileEntry): Promise<void>;
-export async function putEntryByPath(db: IDBPDatabase, path: AbsolutePath, entry: DBEntry) {
-    await db.put(STORE_NAME, entry, toStoragePath(path));
+/** Object store handle for reading and writing entries. */
+export interface EntryStoreWritable extends EntryStoreReadable {
+    put(value: DBEntry, key: StoragePath): Promise<unknown>;
 }
 
-export async function ensureParentDirs(db: IDBPDatabase, path: AbsolutePath): Promise<AbsoluteFolderPath[]> {
+export async function getEntryByPath(store: EntryStoreReadable, path: AbsoluteFolderPath): Promise<DBFolderEntry|null>;
+export async function getEntryByPath(store: EntryStoreReadable, path: AbsoluteFilePath): Promise<DBFileEntry|null>;
+export async function getEntryByPath(store: EntryStoreReadable, path: AbsolutePath): Promise<DBEntry|null> {
+    return (await store.get(toStoragePath(path))) ?? null;
+}
+
+export async function putEntryByPath(store: EntryStoreWritable, path: AbsoluteFolderPath, entry: DBFolderEntry): Promise<void>;
+export async function putEntryByPath(store: EntryStoreWritable, path: AbsoluteFilePath, entry: DBFileEntry): Promise<void>;
+export async function putEntryByPath(store: EntryStoreWritable, path: AbsolutePath, entry: DBEntry) {
+    await store.put(entry, toStoragePath(path));
+}
+
+export async function ensureParentDirs(store: EntryStoreWritable, path: AbsolutePath): Promise<AbsoluteFolderPath[]> {
     const segments = path.split('/').filter(Boolean);
     segments.pop();
 
@@ -67,11 +74,11 @@ export async function ensureParentDirs(db: IDBPDatabase, path: AbsolutePath): Pr
     for(const segment of segments) {
         curr_path = (curr_path + segment + '/') as AbsoluteFolderPath;
 
-        const folder_entry = await getEntryByPath(db, curr_path);
+        const folder_entry = await getEntryByPath(store, curr_path);
         if(folder_entry == null) {
             const new_entry: DBFolderEntry = createDBFolderEntry(curr_path);
 
-            await putEntryByPath(db, curr_path, new_entry);
+            await putEntryByPath(store, curr_path, new_entry);
             created.push(curr_path);
             continue;
         }

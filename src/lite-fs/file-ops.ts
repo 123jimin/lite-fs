@@ -5,7 +5,7 @@ import {validatePath} from "../path.ts";
 import {FSError} from "../error.ts";
 import type {FSBuffer} from "../api/index.ts";
 
-import {createDBFileEntry, ensureParentDirs, getEntryByPath, putEntryByPath, type FSCore} from "./core/index.ts";
+import {STORE_NAME, createDBFileEntry, ensureParentDirs, getEntryByPath, putEntryByPath, type FSCore} from "./core/index.ts";
 
 export function createFileOps(core: FSCore): FileOps {
     async function readFile(path: string): Promise<FSBuffer>;
@@ -14,7 +14,8 @@ export function createFileOps(core: FSCore): FileOps {
         const path = validatePath(in_path, 'file');
 
         const db = await core.getDB();
-        const entry = await getEntryByPath(db, path);
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const entry = await getEntryByPath(tx.store, path);
 
         if(!entry) {
             throw FSError.ENOENT(path, 'read');
@@ -32,22 +33,26 @@ export function createFileOps(core: FSCore): FileOps {
     async function writeFile(in_path: string, content: string | FSBuffer): Promise<void> {
         const path = validatePath(in_path, 'file');
 
-        const db = await core.getDB();
-        const created_dirs = await ensureParentDirs(db, path);
-        for(const dir of created_dirs) {
-            core.emit({eventType: 'rename', filename: dir});
-        }
-
-        const existing = await getEntryByPath(db, path);
-        const is_new_file = !existing || existing.type !== 'file';
-
         const bytes = typeof content === 'string'
             ? new TextEncoder().encode(content)
             : content;
 
-        const entry = createDBFileEntry(path, bytes);
-        await putEntryByPath(db, path, entry);
+        const db = await core.getDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
 
+        const created_dirs = await ensureParentDirs(tx.store, path);
+
+        const existing = await getEntryByPath(tx.store, path);
+        const is_new_file = !existing || existing.type !== 'file';
+
+        const entry = createDBFileEntry(path, bytes);
+        await putEntryByPath(tx.store, path, entry);
+
+        await tx.done;
+
+        for(const dir of created_dirs) {
+            core.emit({eventType: 'rename', filename: dir});
+        }
         core.emit({
             eventType: is_new_file ? 'rename' : 'change',
             filename: path,

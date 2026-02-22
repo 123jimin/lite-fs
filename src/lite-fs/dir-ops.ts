@@ -2,18 +2,19 @@ export type {DirOps} from "../api/dir-ops.ts";
 import type {DirOps, Dirent, MkdirOptions} from "../api/dir-ops.ts";
 
 import {FSError} from "../error.ts";
-import {getBaseName, getParentPath, validatePath} from "../path.ts";
+import {getBaseName, getParentPath, validatePath, type AbsoluteFolderPath} from "../path.ts";
 import {
+    INDEX_BY_PARENT,
+    STORE_NAME,
     createDBFolderEntry,
     ensureParentDirs,
     getEntryByPath,
     putEntryByPath,
+    toStoragePath,
+    fromFolderStoragePath,
     type DBEntry,
     type FSCore,
 } from "./core/index.ts";
-
-import {INDEX_BY_PARENT, STORE_NAME} from "./core/const.ts";
-import {fromFolderStoragePath, toStoragePath} from "./core/path.ts";
 
 function createDirent(entry: DBEntry, name: string): Dirent {
     const is_file = entry.type === 'file';
@@ -33,38 +34,46 @@ export function createDirOps(core: FSCore): DirOps {
         }
 
         const db = await core.getDB();
-        const existing = await getEntryByPath(db, path);
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+
+        const existing = await getEntryByPath(tx.store, path);
 
         if(existing) {
             if(options?.recursive && existing.type === 'folder') {
-                // With recursive: true, existing directory is OK.
                 return;
             }
+            tx.abort();
             throw FSError.EEXIST(path, 'mkdir');
         }
 
+        let created_parents: AbsoluteFolderPath[] = [];
+
         if(options?.recursive) {
-            const created = await ensureParentDirs(db, path);
-            for(const dir of created) {
-                core.emit({eventType: 'rename', filename: dir});
-            }
+            created_parents = await ensureParentDirs(tx.store, path);
         } else {
             // Non-recursive: parent must exist.
             const parent_path = getParentPath(path);
             if(parent_path !== '/') {
-                const parent = await getEntryByPath(db, parent_path);
+                const parent = await getEntryByPath(tx.store, parent_path);
                 if(!parent) {
+                    tx.abort();
                     throw FSError.ENOENT(parent_path, 'mkdir');
                 }
                 if(parent.type !== 'folder') {
+                    tx.abort();
                     throw FSError.ENOTDIR(parent_path.slice(0, -1), 'mkdir');
                 }
             }
         }
 
         const entry = createDBFolderEntry(path);
-        await putEntryByPath(db, path, entry);
+        await putEntryByPath(tx.store, path, entry);
 
+        await tx.done;
+
+        for(const dir of created_parents) {
+            core.emit({eventType: 'rename', filename: dir});
+        }
         core.emit({eventType: 'rename', filename: path});
     }
 
@@ -74,10 +83,11 @@ export function createDirOps(core: FSCore): DirOps {
         const path = validatePath(in_path, 'folder');
 
         const db = await core.getDB();
+        const tx = db.transaction(STORE_NAME, 'readonly');
 
         // Check directory exists.
         if(path !== '/') {
-            const dir_entry = await getEntryByPath(db, path);
+            const dir_entry = await getEntryByPath(tx.store, path);
             if(!dir_entry) {
                 throw FSError.ENOENT(path, 'readdir');
             }
@@ -88,7 +98,6 @@ export function createDirOps(core: FSCore): DirOps {
 
         // Query children by parent index.
         const storage_path = toStoragePath(path);
-        const tx = db.transaction(STORE_NAME, 'readonly');
         const index = tx.store.index(INDEX_BY_PARENT);
 
         const results: Array<{name: string; entry: DBEntry}> = [];
