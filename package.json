@@ -1,6 +1,6 @@
 {
   "name": "@jiminp/lite-fs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A simple fs-like API wrapper of IndexedDB for light application usage.",
   "type": "module",
   "engines": {
@@ -53,7 +53,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.3.0",
     "chai": "^6.2.2",
-    "eslint": "^10.0.0",
+    "eslint": "^10.0.1",
     "fake-indexeddb": "^6.2.5",
     "mocha": "^11.7.5",
     "rimraf": "^6.1.3",
